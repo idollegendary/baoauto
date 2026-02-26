@@ -1,0 +1,41 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+
+# Environment
+.env
+.env.*
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Coverage
+coverage/
+
+# Build output
+build/
+
+# Database dumps
+*.sql
+*.dump
+
+# Misc
+.cache/
+.nyc_output/
+/.turbo/

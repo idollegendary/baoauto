@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --bg: #0b1020;
+  --muted: #94a3b8;
+  --accent: #b4886b;
+}
+
+html,body,#__next{height:100%;}
+body{
+  @apply bg-[var(--bg)] text-white antialiased;
+  font-family: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* Single site font: Montserrat */
+h1,h2,h3,h4,h5{
+  font-family: 'Montserrat', sans-serif;
+}
+
+.container-wide{max-width:1280px;margin-left:auto;margin-right:auto;padding-left:1rem;padding-right:1rem}
+
+.premium-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.05);backdrop-filter: blur(8px);box-shadow: 0 6px 30px rgba(2,6,23,0.6);}
+
+.accent{color:var(--accent)}
+
+.muted{color:var(--muted)}
+
+/* Car card specific */
+.car-image-frame{width:120px;height:80px;border-radius:12px;overflow:hidden;flex-shrink:0}
+.car-price{color:var(--accent);font-family:'Montserrat',sans-serif;font-size:1.25rem}
+
+/* Variant B specific tweaks */
+@media (max-width:640px){
+  .car-price{font-size:1rem}
+}
+.car-title{font-weight:600}
+.car-summary{color:rgba(255,255,255,0.85)}
+
+/* Animations & microinteractions — disabled for a stable, simple UI */
+.premium-card{transition:none}
+.premium-card:hover{transform:none;box-shadow:0 6px 30px rgba(2,6,23,0.6);border-color:rgba(255,255,255,0.05)}
+.car-image-frame img{transition:none}
+.car-image-frame:hover img{transform:none}
+
+button{transition:none}
+button:hover{transform:none}
+
+/* Card-specific animations (enabled only on elements with `car-animate`) */
+.car-animate{transition:transform 240ms ease, box-shadow 240ms ease}
+.car-animate:hover{transform:translateY(-6px);box-shadow:0 14px 40px rgba(2,6,23,0.5)}
+.car-animate img{transition:transform 350ms ease}
+.car-animate:hover img{transform:scale(1.04)}
+
+/* Responsive typography tuning */
+html{font-size:16px}
+@media (max-width:768px){
+  html{font-size:15px}
+  .container-wide{padding-left:0.75rem;padding-right:0.75rem}
+}
+@media (max-width:420px){
+  html{font-size:14px}
+}
+
