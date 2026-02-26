@@ -4,7 +4,7 @@ import Head from 'next/head'
 import Header from '../../components/Header'
 
 export default function Admin(){
-  const [form, setForm] = useState({ title:'', make:'', model:'', generation:'', year:'', km:'', price:'', images:'', image:'', description:'', vin:'', engineVolume:'', power:'', drivetrain:'', emissionStandard:'', bodyType:'', color:'' })
+  const [form, setForm] = useState<any>({ title:'', make:'', model:'', generation:'', year:'', km:'', price:'', images:'', image:'', description:'', vin:'', engineVolume:'', power:'', drivetrain:'', emissionStandard:'', bodyType:'', color:'', gearbox:'', fuel:'' })
   const [status, setStatus] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [publishedCars, setPublishedCars] = useState<any[]>([])
