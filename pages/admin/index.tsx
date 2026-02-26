@@ -126,7 +126,7 @@ export default function Admin(){
   const submit = async (e:any)=>{
     e.preventDefault()
     setStatus('Publishing...')
-    const car = Object.assign({}, form)
+    const car: any = Object.assign({}, form)
     if(car.images && typeof car.images === 'string'){
       car.images = car.images.split(',').map((s:string)=>s.trim()).filter(Boolean)
     }
