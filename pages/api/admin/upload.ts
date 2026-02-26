@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // For formidable v3+, use the factory function and await parsing so Next waits for response
   const form = formidable({ multiples: true })
   await new Promise<void>((resolve, reject)=>{
-    form.parse(req, async (err, fields, files) => {
+    form.parse(req, async (err: any, fields: any, files: any) => {
       if(err){
         console.error('form.parse error:', err)
         res.status(500).json({error:'parse error', detail: String(err)})

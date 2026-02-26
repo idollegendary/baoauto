@@ -60,7 +60,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       color: car.color || null,
       image: car.image || (Array.isArray(car.images) && car.images.length>0 ? car.images[0] : null),
       images: car.images || null,
-      vin: car.vin || null,
       equipment: car.equipment || null,
       description: car.description || null,
     }

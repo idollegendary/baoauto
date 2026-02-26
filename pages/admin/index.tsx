@@ -82,7 +82,7 @@ export default function Admin(){
     const newPending = pendingFiles.filter((_,i)=>i!==index)
     setPendingFiles(newPending)
     // if removed was main, pick new main from remaining pending or existing images
-    setForm(f=>{
+    setForm((f:any)=>{
       const existing = getImagesArray()
       const newMain = (newPending[0] && newPending[0].url) || existing[0] || ''
       return {...f, image: newMain}
@@ -99,7 +99,7 @@ export default function Admin(){
     const arr = getImagesArray()
     arr.splice(index,1)
     const cleaned = arr.filter(Boolean)
-    setForm(f=>({...f, images: cleaned.join(', '), image: cleaned[0] || '' }))
+    setForm((f:any)=>({...f, images: cleaned.join(', '), image: cleaned[0] || '' }))
   }
 
   // main selection removed: first image will be considered main
@@ -112,7 +112,7 @@ export default function Admin(){
         const next = [...p, {file, url}]
         // if no main image yet, set preview main to first pending
         if(!form.image && next[0]){
-          setForm(f=>({...f, image: next[0].url}))
+          setForm((f:any)=>({...f, image: next[0].url}))
         }
         return next
       })
@@ -220,34 +220,34 @@ export default function Admin(){
               {editingId && <div className="text-sm text-white/60">Редагування: {editingId}</div>}
             </div>
             <label className="text-sm muted">Назва</label>
-            <input value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="Audi A4 B8" className={`w-full ${inputClass('title')}`} />
+            <input value={form.title} onChange={e=>setForm((f:any)=>({...f,title:e.target.value}))} placeholder="Audi A4 B8" className={`w-full ${inputClass('title')}`} />
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm muted">Марка</label>
-                <input value={form.make} onChange={e=>setForm(f=>({...f,make:e.target.value}))} placeholder="Make" className={`w-full ${inputClass('make')}`} />
+                <input value={form.make} onChange={e=>setForm((f:any)=>({...f,make:e.target.value}))} placeholder="Make" className={`w-full ${inputClass('make')}`} />
               </div>
               <div>
                 <label className="text-sm muted">Модель</label>
-                <input value={form.model} onChange={e=>setForm(f=>({...f,model:e.target.value}))} placeholder="Model" className={`w-full ${inputClass('model')}`} />
+                <input value={form.model} onChange={e=>setForm((f:any)=>({...f,model:e.target.value}))} placeholder="Model" className={`w-full ${inputClass('model')}`} />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <input value={form.generation} onChange={e=>setForm(f=>({...f,generation:e.target.value}))} placeholder="Покоління" className={`${inputClass('generation')}`} />
-              <select value={form.year} onChange={e=>setForm(f=>({...f,year:e.target.value}))} className={`${inputClass('year')}`}>
+              <input value={form.generation} onChange={e=>setForm((f:any)=>({...f,generation:e.target.value}))} placeholder="Покоління" className={`${inputClass('generation')}`} />
+              <select value={form.year} onChange={e=>setForm((f:any)=>({...f,year:e.target.value}))} className={`${inputClass('year')}`}>
                 <option value="">Рік</option>
                 {Array.from({length: 37}).map((_,i)=>{
                   const y = 2026 - i
                   return <option key={y} value={String(y)}>{y}</option>
                 })}
               </select>
-              <input value={form.km} onChange={e=>setForm(f=>({...f,km:e.target.value}))} placeholder="Пробіг (км)" className={`${inputClass('km')}`} />
+              <input value={form.km} onChange={e=>setForm((f:any)=>({...f,km:e.target.value}))} placeholder="Пробіг (км)" className={`${inputClass('km')}`} />
             </div>
 
             <div className="grid grid-cols-2 gap-3 mt-2">
-              <input value={form.vin} onChange={e=>setForm(f=>({...f,vin:e.target.value}))} placeholder="VIN" className={`${inputClass('vin')}`} />
-              <select value={form.emissionStandard} onChange={e=>setForm(f=>({...f,emissionStandard:e.target.value}))} className={`${inputClass('emissionStandard')}`}>
+              <input value={form.vin} onChange={e=>setForm((f:any)=>({...f,vin:e.target.value}))} placeholder="VIN" className={`${inputClass('vin')}`} />
+              <select value={form.emissionStandard} onChange={e=>setForm((f:any)=>({...f,emissionStandard:e.target.value}))} className={`${inputClass('emissionStandard')}`}>
                 <option value="">Екостандарт</option>
                 <option value="Euro 5">Euro 5</option>
                 <option value="Euro 6">Euro 6</option>
@@ -255,9 +255,9 @@ export default function Admin(){
             </div>
 
             <div className="grid grid-cols-3 gap-3 mt-2">
-              <input value={form.engineVolume} onChange={e=>setForm(f=>({...f,engineVolume:e.target.value}))} placeholder="Об'єм, напр. 1.8" className={`${inputClass('engineVolume')}`} />
-              <input value={form.power} onChange={e=>setForm(f=>({...f,power:e.target.value}))} placeholder="Потужність (к.с.)" className={`${inputClass('power')}`} />
-              <select value={form.drivetrain} onChange={e=>setForm(f=>({...f,drivetrain:e.target.value}))} className={`${inputClass('drivetrain')}`}>
+              <input value={form.engineVolume} onChange={e=>setForm((f:any)=>({...f,engineVolume:e.target.value}))} placeholder="Об'єм, напр. 1.8" className={`${inputClass('engineVolume')}`} />
+              <input value={form.power} onChange={e=>setForm((f:any)=>({...f,power:e.target.value}))} placeholder="Потужність (к.с.)" className={`${inputClass('power')}`} />
+              <select value={form.drivetrain} onChange={e=>setForm((f:any)=>({...f,drivetrain:e.target.value}))} className={`${inputClass('drivetrain')}`}>
                 <option value="">Привід</option>
                 <option value="FWD">Передній</option>
                 <option value="RWD">Задній</option>
@@ -266,7 +266,7 @@ export default function Admin(){
             </div>
 
             <div className="grid grid-cols-2 gap-3 mt-2">
-              <select value={form.bodyType} onChange={e=>setForm(f=>({...f,bodyType:e.target.value}))} className={`${inputClass('bodyType')}`}>
+              <select value={form.bodyType} onChange={e=>setForm((f:any)=>({...f,bodyType:e.target.value}))} className={`${inputClass('bodyType')}`}>
                 <option value="">Тип кузова</option>
                 <option value="sedan">Седан</option>
                 <option value="wagon">Універсал</option>
@@ -274,18 +274,18 @@ export default function Admin(){
                 <option value="suv">SUV</option>
                 <option value="coupe">Купе</option>
               </select>
-              <input value={form.color} onChange={e=>setForm(f=>({...f,color:e.target.value}))} placeholder="Колір" className={`${inputClass('color')}`} />
+              <input value={form.color} onChange={e=>setForm((f:any)=>({...f,color:e.target.value}))} placeholder="Колір" className={`${inputClass('color')}`} />
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <select value={form.gearbox} onChange={e=>setForm(f=>({...f,gearbox:e.target.value}))} className={`${inputClass('gearbox')}`}>
+              <select value={form.gearbox} onChange={e=>setForm((f:any)=>({...f,gearbox:e.target.value}))} className={`${inputClass('gearbox')}`}>
                 <option value="">КПП</option>
                 <option value="Manual">Manual</option>
                 <option value="Automatic">Automatic</option>
                 <option value="CVT">CVT</option>
                 <option value="Robot">Robot</option>
               </select>
-              <select value={form.fuel} onChange={e=>setForm(f=>({...f,fuel:e.target.value}))} className={`${inputClass('fuel')}`}>
+              <select value={form.fuel} onChange={e=>setForm((f:any)=>({...f,fuel:e.target.value}))} className={`${inputClass('fuel')}`}>
                 <option value="">Паливо</option>
                 <option value="Petrol">Petrol</option>
                 <option value="Diesel">Diesel</option>
@@ -293,12 +293,12 @@ export default function Admin(){
                 <option value="Electric">Electric</option>
                 <option value="LPG">LPG</option>
               </select>
-              <input value={form.price} onChange={e=>setForm(f=>({...f,price:e.target.value}))} placeholder="€7,500" className={`${inputClass('price')}`} />
+              <input value={form.price} onChange={e=>setForm((f:any)=>({...f,price:e.target.value}))} placeholder="€7,500" className={`${inputClass('price')}`} />
             </div>
             
 
             <label className="text-sm muted">Опис</label>
-            <textarea value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="Короткий опис" className={`w-full min-h-[120px] ${inputClass('description')}`} />
+            <textarea value={form.description} onChange={e=>setForm((f:any)=>({...f,description:e.target.value}))} placeholder="Короткий опис" className={`w-full min-h-[120px] ${inputClass('description')}`} />
 
             {/* removed admin secret and Publish all per request */}
           </div>
@@ -323,7 +323,7 @@ export default function Admin(){
               <div className="mb-3">
                   <label className="text-sm muted">Завантажити фото (drag & drop або вибрати)</label>
                   <div
-                    onDrop={async (e:any)=>{ e.preventDefault(); setIsDragging(false); const files = Array.from(e.dataTransfer.files || []); for(const f of files){ await uploadFile(f) } }}
+                    onDrop={async (e:any)=>{ e.preventDefault(); setIsDragging(false); const files = Array.from(e.dataTransfer.files || []) as File[]; for(const f of files){ await uploadFile(f) } }}
                     onDragOver={(e)=>{ e.preventDefault(); setIsDragging(true) }}
                     onDragEnter={(e)=>{ e.preventDefault(); setIsDragging(true) }}
                     onDragLeave={(e)=>{ e.preventDefault(); setIsDragging(false) }}
@@ -347,7 +347,7 @@ export default function Admin(){
                       </div>
                     ))}
 
-                    {getImagesArray().map((url, i)=> (
+                    {getImagesArray().map((url: string, i: number)=> (
                       <div key={`img-${i}`} className="relative w-full h-20 rounded overflow-hidden bg-black/10">
                         <img src={url} className="w-full h-full object-cover" />
                         <div className="absolute right-1 top-1 flex gap-1">
@@ -401,7 +401,7 @@ export default function Admin(){
                     {editingId === p.id && (
                       <div className="flex items-center gap-2">
                         <div className="grid grid-cols-3 gap-2 mr-2">
-                          {getImagesArray().map((u,i)=> (
+                          {getImagesArray().map((u: string, i: number)=> (
                             <img key={i} src={u} className="w-12 h-8 object-cover rounded" />
                           ))}
                           {pendingFiles.map((pf,i)=> (

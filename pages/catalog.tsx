@@ -111,8 +111,8 @@ export default function Catalog(){
             emission:f.emission,
             yearFrom:f.yearFrom,
             yearTo:f.yearTo,
-            priceMin:f.priceMin,
-            priceMax:f.priceMax
+            priceMin:String(f.priceMin),
+            priceMax:String(f.priceMax)
           }); setPage(1) }}
         />
 

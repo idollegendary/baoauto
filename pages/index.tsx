@@ -108,8 +108,8 @@ export default function Home(){
             emission:f.emission,
             yearFrom:f.yearFrom,
             yearTo:f.yearTo,
-            priceMin:f.priceMin,
-            priceMax:f.priceMax
+            priceMin:String(f.priceMin),
+            priceMax:String(f.priceMax)
           })}
         />
 
