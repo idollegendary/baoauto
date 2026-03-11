@@ -38,16 +38,16 @@ export default function Header(){
           </button>
 
           {open && (
-            <div className="absolute right-4 top-20 z-40 w-56 bg-white dark:bg-slate-900 rounded-lg shadow-lg ring-1 ring-black/5">
-              <ul className="flex flex-col p-3 gap-2">
+            <div className="absolute right-4 top-20 z-50 w-56 bg-[var(--bg)] border border-white/10 rounded-lg shadow-lg">
+              <ul className="flex flex-col p-3 gap-1 text-white">
                 <li>
-                  <Link href="/catalog" className="block px-3 py-2 rounded hover:bg-slate-50">Каталог</Link>
+                  <Link href="/catalog" className="block px-3 py-2 rounded hover:bg-white/10">Каталог</Link>
                 </li>
                 <li>
-                  <a className="block px-3 py-2 rounded hover:bg-slate-50">Новинки</a>
+                  <a className="block px-3 py-2 rounded hover:bg-white/10">Новинки</a>
                 </li>
                 <li>
-                  <a className="block px-3 py-2 rounded hover:bg-slate-50">Контакти</a>
+                  <a className="block px-3 py-2 rounded hover:bg-white/10">Контакти</a>
                 </li>
               </ul>
             </div>

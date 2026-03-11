@@ -67,3 +67,38 @@ html{font-size:16px}
   html{font-size:14px}
 }
 
+.car-main-swiper .swiper-button-prev,
+.car-main-swiper .swiper-button-next,
+.swiper .swiper-button-prev,
+.swiper .swiper-button-next{
+  color:#fff;
+  width:40px;
+  height:40px;
+  border-radius:999px;
+  background:rgba(0,0,0,0.38);
+  backdrop-filter:blur(2px);
+}
+
+.car-main-swiper .swiper-button-prev:after,
+.car-main-swiper .swiper-button-next:after,
+.swiper .swiper-button-prev:after,
+.swiper .swiper-button-next:after{
+  font-size:14px;
+  font-weight:800;
+}
+
+.car-thumbs-swiper .swiper-slide{
+  opacity:0.65;
+  cursor:pointer;
+  transition:opacity 180ms ease;
+}
+
+.car-thumbs-swiper .swiper-slide-thumb-active{
+  opacity:1;
+}
+
+.car-thumbs-swiper .swiper-slide-thumb-active > div{
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(180,136,107,0.35);
+}
+
