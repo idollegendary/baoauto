@@ -5,14 +5,20 @@ import CarList from '../components/CarList'
 import Footer from '../components/Footer'
 import CarFilters from '../components/CarFilters'
 import { useState, useMemo, useEffect } from 'react'
+import { getCarPricePLN } from '../lib/formatPrice'
+import { absoluteUrl } from '../lib/seo'
 
 
 export default function Home(){
+  const canonical = absoluteUrl('/')
+  const title = 'BAO AUTO - Автовикуп і підбір авто з Європи'
+  const description = 'BAO AUTO: підбір, перевірка та продаж авто з Європи. Прозора історія, гнучкі фільтри, актуальний каталог та консультація.'
+
   const [filters, setFilters] = useState({make:'', fuel:'', gearbox:'', drivetrain:'', bodyType:'', emission:'', yearFrom:'', yearTo:'', priceMin:'', priceMax:'', sortBy:'yearDesc'})
 
   const [cars, setCars] = useState<any[]>([])
   useEffect(()=>{
-    fetch('/api/cars').then(r=>r.json()).then(d=>setCars(d.cars || []))
+    fetch('/api/cars?listing=dealer').then(r=>r.json()).then(d=>setCars(d.cars || []))
   },[])
 
   const makes = Array.from(new Set(cars.map(s=>s.make))).filter(Boolean)
@@ -24,61 +30,55 @@ export default function Home(){
   const bodyTypes = Array.from(new Set(cars.map(s=>s.body_type || s.bodyType))).filter(Boolean)
   const emissions = Array.from(new Set(cars.map(s=>s.emission_standard || s.emissionStandard || s.emission))).filter(Boolean)
 
+  const matchesFilters = (c:any)=>{
+    const carPrice = getCarPricePLN(c)
+    if(filters.make && c.make !== filters.make) return false
+    if(filters.fuel && c.fuel !== filters.fuel) return false
+    if(filters.gearbox && c.gearbox !== filters.gearbox) return false
+    if(filters.drivetrain){
+      const cd = c.drivetrain || c.drive_train
+      if(cd !== filters.drivetrain) return false
+    }
+    if(filters.bodyType){
+      const cb = c.body_type || c.bodyType
+      if(cb !== filters.bodyType) return false
+    }
+    if(filters.emission){
+      const ce = c.emission_standard || c.emissionStandard || c.emission
+      if(ce !== filters.emission) return false
+    }
+    if(filters.yearFrom){
+      const yf = Number(filters.yearFrom)
+      if(Number.isFinite(yf) && (c.year === undefined || Number(c.year) < yf)) return false
+    }
+    if(filters.yearTo){
+      const yt = Number(filters.yearTo)
+      if(Number.isFinite(yt) && (c.year === undefined || Number(c.year) > yt)) return false
+    }
+    if(filters.priceMin !== '' && filters.priceMin !== undefined){
+      const min = Number(filters.priceMin)
+      if(Number.isFinite(min) && (carPrice === null || carPrice < min)) return false
+    }
+    if(filters.priceMax !== '' && filters.priceMax !== undefined){
+      const max = Number(filters.priceMax)
+      if(Number.isFinite(max) && (carPrice === null || carPrice > max)) return false
+    }
+    return true
+  }
+
+  const newestTimestamp = (c:any)=>{
+    const created = Date.parse(String(c?.created_at || ''))
+    if(Number.isFinite(created)) return created
+    const updated = Date.parse(String(c?.updated_at || ''))
+    if(Number.isFinite(updated)) return updated
+    const idNum = Number(c?.id)
+    return Number.isFinite(idNum) ? idNum : 0
+  }
+
   const filtered = useMemo(()=>{
-    const toNumber = (v:any)=>{
-      if(v === null || v === undefined) return null
-      if(typeof v === 'number') return v
-      // try price_num / priceNum
-      if(typeof v === 'string'){
-        const cleaned = v.replace(/[^0-9\.]/g, '')
-        const n = Number(cleaned)
-        return Number.isFinite(n) ? n : null
-      }
-      return null
-    }
+    const carPrice = (c:any)=> getCarPricePLN(c)
 
-    const carPrice = (c:any)=>{
-      if(c.price_num !== undefined && c.price_num !== null) return Number(c.price_num)
-      if(c.priceNum !== undefined && c.priceNum !== null) return Number(c.priceNum)
-      if(c.price !== undefined && c.price !== null) return toNumber(c.price)
-      return null
-    }
-
-    const result = cars.filter(c=>{
-      if(filters.make && c.make !== filters.make) return false
-      if(filters.fuel && c.fuel !== filters.fuel) return false
-      if(filters.gearbox && c.gearbox !== filters.gearbox) return false
-      if(filters.drivetrain){
-        const cd = c.drivetrain || c.drive_train
-        if(cd !== filters.drivetrain) return false
-      }
-      if(filters.bodyType){
-        const cb = c.body_type || c.bodyType
-        if(cb !== filters.bodyType) return false
-      }
-      if(filters.emission){
-        const ce = c.emission_standard || c.emissionStandard || c.emission
-        if(ce !== filters.emission) return false
-      }
-      if(filters.yearFrom){
-        const yf = Number(filters.yearFrom)
-        if(Number.isFinite(yf) && (c.year === undefined || Number(c.year) < yf)) return false
-      }
-      if(filters.yearTo){
-        const yt = Number(filters.yearTo)
-        if(Number.isFinite(yt) && (c.year === undefined || Number(c.year) > yt)) return false
-      }
-      const p = carPrice(c)
-      if(filters.priceMin !== '' && filters.priceMin !== undefined){
-        const min = Number(filters.priceMin)
-        if(Number.isFinite(min) && (p === null || p < min)) return false
-      }
-      if(filters.priceMax !== '' && filters.priceMax !== undefined){
-        const max = Number(filters.priceMax)
-        if(Number.isFinite(max) && (p === null || p > max)) return false
-      }
-      return true
-    })
+    const result = cars.filter(matchesFilters)
 
     const sorted = [...result]
     const kmValue = (c:any)=> Number(c.km || 0)
@@ -91,11 +91,35 @@ export default function Home(){
     return sorted
   },[filters, cars])
 
+  const latestArrivals = useMemo(()=>{
+    return cars
+      .filter(matchesFilters)
+      .slice()
+      .sort((a,b)=> newestTimestamp(b) - newestTimestamp(a))
+      .slice(0,3)
+  },[cars, filters])
+
+  const catalogSelection = useMemo(()=>{
+    const latestSet = new Set(latestArrivals)
+    const withoutLatest = filtered.filter((c)=>!latestSet.has(c))
+    if(withoutLatest.length >= 6) return withoutLatest.slice(0,6)
+    return filtered.slice(0,6)
+  },[filtered, latestArrivals])
+
   return (
     <div>
       <Head>
-        <title>BAO Auto — Автовикуп автомобілів в Європі</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={absoluteUrl('/logo_baoauto.png')} />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={absoluteUrl('/logo_baoauto.png')} />
       </Head>
       <main className="container-wide py-6 sm:py-8 relative">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(ellipse_at_top,rgba(180,136,107,0.20),transparent_65%)]" />
@@ -161,12 +185,12 @@ export default function Home(){
         />
         </section>
 
-        <section className="relative z-10 mt-8">
+        <section id="latest" className="relative z-10 mt-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-serif text-2xl">Останні надходження</h2>
-            <div className="text-sm text-white/70">Знайдено: <span className="text-white font-semibold">{filtered.length}</span></div>
+            <div className="text-sm text-white/70">Показано: <span className="text-white font-semibold">{latestArrivals.length}</span></div>
           </div>
-          <CarList cars={filtered.slice(0,2)} />
+          <CarList cars={latestArrivals} />
         </section>
 
         <section className="relative z-10 mt-8">
@@ -174,7 +198,7 @@ export default function Home(){
             <h2 className="font-serif text-2xl">Добірка з каталогу</h2>
             <a href="/catalog" className="px-4 py-2 rounded-lg bg-[var(--accent)] text-black font-semibold">Побачити весь каталог</a>
           </div>
-          <CarList cars={filtered.slice(0,6)} />
+          <CarList cars={catalogSelection} />
         </section>
 
         <section className="relative z-10 mt-8">

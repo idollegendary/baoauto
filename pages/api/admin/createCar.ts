@@ -37,6 +37,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if(car.power && typeof car.power === 'string') car.power = parseInt(car.power.replace(/[^0-9]/g, ''), 10)
     if(car.power && typeof car.power === 'number' && Number.isNaN(car.power)) car.power = null
 
+    const parsePrice = (v:any) => {
+      if(v === null || v === undefined) return null
+      if(typeof v === 'number') return Number.isFinite(v) ? v : null
+      if(typeof v === 'string'){
+        const cleaned = v.replace(/[^0-9\,\.]/g, '').replace(',', '.')
+        if(!cleaned) return null
+        const n = parseFloat(cleaned)
+        return Number.isFinite(n) ? n : null
+      }
+      return null
+    }
+
+    const pricePLN = parsePrice(car.price_pln ?? car.pricePLN ?? car.price_num ?? car.priceNum ?? car.price)
+    const priceUSD = parsePrice(car.price_usd ?? car.priceUSD)
+
     const payload:any = {
       id: car.id || (Date.now()).toString(),
       make: car.make || null,
@@ -47,9 +62,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       km: car.km || null,
       gearbox: car.gearbox || null,
       fuel: car.fuel || null,
-      // single price field (display). we do not require separate numeric price.
-      price: car.price || null,
-      price_num: null,
+      // single source of truth for price
+      price_pln: pricePLN,
+      price_usd: priceUSD,
       // additional fields
       vin: car.vin || null,
       engine_volume: car.engine_volume || car.engineVolume || null,
@@ -62,9 +77,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       images: car.images || null,
       equipment: car.equipment || null,
       description: car.description || null,
+      listing_type: String(car.listing_type || car.listingType || 'dealer') === 'owner' ? 'owner' : 'dealer',
     }
 
-    const { data, error } = await supabase.from('cars').insert([payload]).select().single()
+    let { data, error } = await supabase.from('cars').insert([payload]).select().single()
+    if(error && /listing_type/i.test(String(error.message || ''))){
+      const fallback = { ...payload }
+      delete fallback.listing_type
+      const retry = await supabase.from('cars').insert([fallback]).select().single()
+      data = retry.data as any
+      error = retry.error as any
+    }
     if(error) return res.status(500).json({error: error.message})
     return res.status(201).json({ok:true, car: data})
   }catch(err:any){

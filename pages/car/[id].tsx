@@ -1,17 +1,20 @@
 import fs from 'fs'
 import path from 'path'
+import Head from 'next/head'
+import Image from 'next/image'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { GetStaticPaths, GetStaticProps } from 'next'
 import Link from 'next/link'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { FreeMode, Keyboard, Navigation, Thumbs } from 'swiper'
+import { FreeMode, Keyboard, Navigation, Thumbs } from 'swiper/modules'
 import type { Swiper as SwiperInstance } from 'swiper'
 import { BatteryCharging, Calendar, Car, CircleDot, Cog, Droplets, Fuel, Gauge, Leaf, Palette, ShieldCheck, Sparkles, Tags, TimerReset, Wrench } from 'lucide-react'
 import Header from '../../components/Header'
 import BaoInfo from '../../components/BaoInfo'
 import Footer from '../../components/Footer'
 import { sampleCars } from '../../data/sampleCars'
-import { formatPLN } from '../../lib/formatPrice'
+import { formatCarPricePLN, formatCarPriceUSD } from '../../lib/formatPrice'
+import { absoluteUrl, buildSeoDescription } from '../../lib/seo'
 
 type AnyCar = Record<string, any>
 
@@ -174,13 +177,15 @@ export const getStaticProps: GetStaticProps<CarPageProps> = async ({ params }) =
   }
 
   const uniqueImages = Array.from(new Set(images.map((item) => String(item || '').trim()).filter(Boolean)))
+  const envRevalidate = Number(process.env.CAR_PAGE_REVALIDATE_SECONDS)
+  const revalidateSeconds = Number.isFinite(envRevalidate) && envRevalidate > 0 ? Math.floor(envRevalidate) : 180
 
   return {
     props: {
       car,
       images: uniqueImages,
     },
-    revalidate: 60,
+    revalidate: revalidateSeconds,
   }
 }
 
@@ -217,6 +222,8 @@ export default function CarPage({ car, images }: CarPageProps) {
     car.fuel ? { label: 'Паливо', value: String(car.fuel) } : null,
     car.gearbox ? { label: 'КПП', value: String(car.gearbox) } : null,
   ].filter(Boolean) as Array<{ label: string; value: string }>
+  const pricePLN = formatCarPricePLN(car)
+  const priceUSD = formatCarPriceUSD(car)
 
   const iconClass = 'h-4 w-4 text-[var(--accent)]'
 
@@ -269,9 +276,29 @@ export default function CarPage({ car, images }: CarPageProps) {
   ]
 
   const hasAnySpecs = specSections.some((section) => section.items.length > 0)
+  const pageTitle = `${car.title} - BAO AUTO`
+  const pageDescription = buildSeoDescription(
+    car.description,
+    `${car.title}. ${car.year ? `Рік: ${car.year}. ` : ''}${car.km ? `Пробіг: ${Number(car.km).toLocaleString('en-US')} км. ` : ''}${pricePLN ? `Ціна: ${pricePLN}.` : ''}`
+  )
+  const canonical = absoluteUrl(`/car/${car.id}`)
+  const ogImage = galleryImages[0] || absoluteUrl('/logo_baoauto.png')
 
   return (
     <>
+      <Head>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={canonical} />
+        <meta property="og:type" content="product" />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={ogImage} />
+      </Head>
       <Header />
       <main className="container-wide py-5 sm:py-8 relative">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(ellipse_at_top,rgba(180,136,107,0.22),transparent_62%)]" />
@@ -296,7 +323,8 @@ export default function CarPage({ car, images }: CarPageProps) {
 
             <div className="premium-card rounded-2xl px-4 py-3 min-w-[220px]">
               <div className="text-xs uppercase tracking-[0.18em] text-white/55">Ціна в Польщі</div>
-              <div className="car-price text-3xl sm:text-4xl mt-1 font-extrabold tracking-wide">{car.price != null ? formatPLN(car.price) : 'Уточнюйте'}</div>
+              <div className="car-price text-3xl sm:text-4xl mt-1 font-extrabold tracking-wide">{pricePLN || 'Уточнюйте'}</div>
+              {priceUSD && <div className="mt-1 text-sm text-white/70">{priceUSD}</div>}
             </div>
           </div>
         </section>
@@ -358,7 +386,7 @@ export default function CarPage({ car, images }: CarPageProps) {
                   {galleryImages.map((src, index) => (
                     <SwiperSlide key={`thumb-${src}-${index}`}>
                       <div className="h-16 sm:h-20 rounded-xl overflow-hidden border border-white/10">
-                        <img src={src} alt={`${car.title} thumb ${index + 1}`} className="w-full h-full object-cover" />
+                        <Image src={src} alt={`${car.title} thumb ${index + 1}`} width={180} height={120} className="w-full h-full object-cover" />
                       </div>
                     </SwiperSlide>
                   ))}

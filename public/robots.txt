@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://baoauto.vercel.app/sitemap.xml

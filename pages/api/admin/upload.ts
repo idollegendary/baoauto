@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import formidable from 'formidable'
 import fs from 'fs'
-import path from 'path'
 import crypto from 'crypto'
 
 // Disable Next's default bodyParser so formidable can parse multipart
@@ -20,13 +19,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { createClient } = await import('@supabase/supabase-js')
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+  const MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+  const MAX_OUTPUT_BYTES = 6 * 1024 * 1024
+
   // For formidable v3+, use the factory function and await parsing so Next waits for response
-  const form = formidable({ multiples: true })
+  const form = formidable({ multiples: true, maxFileSize: MAX_UPLOAD_BYTES })
   await new Promise<void>((resolve, reject)=>{
     form.parse(req, async (err: any, fields: any, files: any) => {
       if(err){
         console.error('form.parse error:', err)
-        res.status(500).json({error:'parse error', detail: String(err)})
+        if(String(err?.message || '').toLowerCase().includes('maxfile')){
+          res.status(400).json({error:'Файл занадто великий. Максимум 15MB'})
+        }else{
+          res.status(500).json({error:'parse error', detail: String(err)})
+        }
         return resolve()
       }
 
@@ -49,7 +55,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const uploaded = Array.isArray(file) ? file[0] : file
         // handle different formidable versions/fields
         const filepath = uploaded?.filepath || uploaded?.path || uploaded?.file?.filepath || uploaded?.file?.path
-        const originalName = uploaded?.originalFilename || uploaded?.originalname || uploaded?.name || uploaded?.filename || 'upload'
         const mime = uploaded?.mimetype || uploaded?.type || 'application/octet-stream'
 
         if(!filepath){
@@ -58,9 +63,74 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return resolve()
         }
 
-        const buffer = await fs.promises.readFile(filepath)
-        const ext = path.extname(String(originalName)) || ''
-        const safeName = `${Date.now()}_${crypto.randomUUID()}${ext}`
+        const inputBuffer = await fs.promises.readFile(filepath)
+        if(inputBuffer.length > MAX_UPLOAD_BYTES){
+          res.status(400).json({error:'Файл занадто великий. Максимум 15MB'})
+          return resolve()
+        }
+
+        let sharpLib: any = null
+        try{
+          sharpLib = (await import('sharp')).default
+        }catch(e){
+          console.warn('sharp is not available, upload without conversion')
+        }
+
+        let outputBuffer = inputBuffer
+        let outputContentType = mime
+        let outputExt = mime.includes('png') ? 'png' : mime.includes('jpeg') || mime.includes('jpg') ? 'jpg' : 'bin'
+
+        if(sharpLib && /^image\//.test(mime)){
+          try{
+            const source = sharpLib(inputBuffer, { failOnError: false }).rotate()
+            const metadata = await source.metadata()
+            const targetFormat = inputBuffer.length > 3 * 1024 * 1024 ? 'avif' : 'webp'
+
+            let pipeline = source.resize({
+              width: 2200,
+              height: 1600,
+              fit: 'inside',
+              withoutEnlargement: true,
+            })
+
+            if(targetFormat === 'avif'){
+              outputBuffer = await pipeline.avif({ quality: 52, effort: 4 }).toBuffer()
+              outputContentType = 'image/avif'
+              outputExt = 'avif'
+            }else{
+              outputBuffer = await pipeline.webp({ quality: 78, effort: 4 }).toBuffer()
+              outputContentType = 'image/webp'
+              outputExt = 'webp'
+            }
+
+            if(outputBuffer.length > MAX_OUTPUT_BYTES){
+              if(targetFormat === 'avif'){
+                outputBuffer = await source.resize({ width: 1920, height: 1440, fit: 'inside', withoutEnlargement: true }).avif({ quality: 45, effort: 4 }).toBuffer()
+                outputContentType = 'image/avif'
+                outputExt = 'avif'
+              }else{
+                outputBuffer = await source.resize({ width: 1920, height: 1440, fit: 'inside', withoutEnlargement: true }).webp({ quality: 68, effort: 4 }).toBuffer()
+                outputContentType = 'image/webp'
+                outputExt = 'webp'
+              }
+            }
+
+            if(metadata && metadata.width && metadata.height){
+              console.log('optimized image', {
+                source: `${metadata.width}x${metadata.height}`,
+                inputBytes: inputBuffer.length,
+                outputBytes: outputBuffer.length,
+                format: outputExt,
+              })
+            }
+          }catch(e){
+            console.warn('sharp optimization failed, using original file', e)
+            outputBuffer = inputBuffer
+            outputContentType = mime
+          }
+        }
+
+        const safeName = `${Date.now()}_${crypto.randomUUID()}.${outputExt}`
         const bucket = 'car-photos'
 
         // ensure bucket exists (ignore error if exists)
@@ -68,7 +138,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           await supabase.storage.createBucket(bucket, { public: true })
         }catch(e){ console.warn('createBucket ignored error', String(e)) }
 
-        const { data, error:upErr } = await supabase.storage.from(bucket).upload(safeName, buffer, {contentType: mime})
+        const { data, error:upErr } = await supabase.storage.from(bucket).upload(safeName, outputBuffer, {contentType: outputContentType})
         if(upErr){
           console.error('supabase upload error:', upErr)
           res.status(500).json({error: upErr.message || String(upErr)})

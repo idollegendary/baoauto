@@ -7,18 +7,19 @@ import { useState, useMemo, useEffect } from 'react'
 import { getCarPricePLN } from '../lib/formatPrice'
 import { absoluteUrl } from '../lib/seo'
 
-export default function Catalog(){
-  const canonical = absoluteUrl('/catalog')
-  const title = 'Каталог авто - BAO AUTO'
-  const description = 'Каталог BAO AUTO: перевірені авто з Європи з фільтрами за ціною, роком, пробігом, паливом та типом кузова.'
+export default function OwnersCars(){
+  const canonical = absoluteUrl('/owners-cars')
+  const title = 'Авто від власників - BAO AUTO'
+  const description = 'Оголошення авто від власників: приватні пропозиції з підтримкою BAO AUTO та доступом до нашої клієнтської бази.'
 
   const pageSize = 18
   const [page, setPage] = useState(1)
   const [cars, setCars] = useState<any[]>([])
   const [filters, setFilters] = useState({make:'', fuel:'', gearbox:'', drivetrain:'', bodyType:'', emission:'', yearFrom:'', yearTo:'', priceMin:'', priceMax:'', sortBy:'yearDesc'})
   const [filtersVersion, setFiltersVersion] = useState(0)
+
   useEffect(()=>{
-    fetch('/api/cars?listing=dealer').then(r=>r.json()).then(d=>setCars(d.cars || []))
+    fetch('/api/cars?listing=owner').then(r=>r.json()).then(d=>setCars(d.cars || []))
   },[])
 
   const makes = Array.from(new Set(cars.map(s=>s.make))).filter(Boolean)
@@ -132,9 +133,21 @@ export default function Catalog(){
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={absoluteUrl('/logo_baoauto.png')} />
       </Head>
+
       <main className="container-wide py-8">
         <Header />
-        <h1 className="font-serif text-3xl mb-6">Каталог автомобілів</h1>
+        <h1 className="font-serif text-3xl mb-2">Авто від власників</h1>
+        <p className="text-white/70 mb-6">Приватні оголошення, які просуваються через базу клієнтів BAO AUTO.</p>
+
+        <section className="mb-6 rounded-2xl border border-amber-300/30 bg-amber-500/10 px-4 py-4">
+          <p className="text-sm sm:text-base text-amber-100 leading-relaxed">
+            ❗ Автомобіль продається напряму від власника. BAO AUTO лише публікує оголошення та не несе відповідальності за стан автомобіля і документи.
+          </p>
+          <p className="text-sm sm:text-base text-amber-100 leading-relaxed mt-3">
+            ❗ Не рекомендуємо робити жодних передоплат або переказів без особистого огляду автомобіля.
+          </p>
+        </section>
+
         <CarFilters
           key={filtersVersion}
           makes={makes}
@@ -167,7 +180,7 @@ export default function Catalog(){
         {total === 0 ? (
           <div className="premium-card rounded-2xl border border-white/10 p-8 text-center">
             <h3 className="text-xl font-semibold">0 результатів</h3>
-            <p className="text-white/70 mt-2">Спробуй розширити параметри пошуку або скинути всі фільтри.</p>
+            <p className="text-white/70 mt-2">Поки що немає оголошень від власників за цими параметрами.</p>
             <button onClick={resetAllFilters} className="mt-5 px-4 py-2 rounded-lg bg-[var(--accent)] text-black font-semibold">Скинути фільтри</button>
           </div>
         ) : (

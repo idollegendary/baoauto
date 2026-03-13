@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
-import { formatPLN } from '../../lib/formatPrice'
+import { formatPLN, formatUSD, getCarPricePLN, getCarPriceUSD } from '../../lib/formatPrice'
 import Head from 'next/head'
 import Header from '../../components/Header'
 
 export default function Admin(){
-  const [form, setForm] = useState<any>({ title:'', make:'', model:'', generation:'', year:'', km:'', price:'', images:'', image:'', description:'', vin:'', engineVolume:'', power:'', drivetrain:'', emissionStandard:'', bodyType:'', color:'', gearbox:'', fuel:'' })
+  const [form, setForm] = useState<any>({ title:'', make:'', model:'', generation:'', year:'', km:'', pricePLN:'', priceUSD:'', listingType:'dealer', images:'', image:'', description:'', vin:'', engineVolume:'', power:'', drivetrain:'', emissionStandard:'', bodyType:'', color:'', gearbox:'', fuel:'' })
   const [status, setStatus] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [publishedCars, setPublishedCars] = useState<any[]>([])
   const [loadingPublished, setLoadingPublished] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
+  const [publishedScope, setPublishedScope] = useState<'all' | 'dealer' | 'owner'>('all')
   const PAGE_SIZE = 10
 
   useEffect(()=>{
@@ -18,9 +19,12 @@ export default function Admin(){
   }, [])
 
   const formRef = useRef<HTMLFormElement | null>(null)
+  const emptyForm = { title:'', make:'', model:'', generation:'', year:'', km:'', pricePLN:'', priceUSD:'', listingType:'dealer', images:'', image:'', description:'', vin:'', engineVolume:'', power:'', drivetrain:'', emissionStandard:'', bodyType:'', color:'', gearbox:'', fuel:'' }
 
   const startEditing = (p:any) => {
-    setForm({ title: p.title||'', make:p.make||'', model:p.model||'', generation:p.generation||'', year:p.year||'', km:p.km||'', price:p.price||'', images:p.images||'', image:p.image||'', description:p.description||'', vin:p.vin||'', engineVolume:p.engine_volume||'', power:p.power||'', drivetrain:p.drivetrain||'', emissionStandard:p.emission_standard||'', bodyType:p.body_type||'', color:p.color||'' })
+    const pricePLN = getCarPricePLN(p)
+    const priceUSD = getCarPriceUSD(p)
+    setForm({ title: p.title||'', make:p.make||'', model:p.model||'', generation:p.generation||'', year:p.year||'', km:p.km||'', pricePLN: pricePLN ?? '', priceUSD: priceUSD ?? '', listingType: p.listing_type === 'owner' ? 'owner' : 'dealer', images:p.images||'', image:p.image||'', description:p.description||'', vin:p.vin||'', engineVolume:p.engine_volume||'', power:p.power||'', drivetrain:p.drivetrain||'', emissionStandard:p.emission_standard||'', bodyType:p.body_type||'', color:p.color||'', gearbox:p.gearbox||'', fuel:p.fuel||'' })
     setEditingId(p.id)
     // scroll form into view and focus first control
     setTimeout(()=>{
@@ -35,6 +39,16 @@ export default function Admin(){
 
   const isChanged = (field:string) => {
     if(!editingId || !originalRef.current) return false
+    if(field === 'pricePLN'){
+      const origPrice = getCarPricePLN(originalRef.current)
+      const curPrice = form.pricePLN === '' ? null : Number(String(form.pricePLN).replace(/[^0-9.,]/g, '').replace(',', '.'))
+      return Number(origPrice ?? 0) !== Number(curPrice ?? 0)
+    }
+    if(field === 'priceUSD'){
+      const origPrice = getCarPriceUSD(originalRef.current)
+      const curPrice = form.priceUSD === '' ? null : Number(String(form.priceUSD).replace(/[^0-9.,]/g, '').replace(',', '.'))
+      return Number(origPrice ?? 0) !== Number(curPrice ?? 0)
+    }
     // try both camelCase and snake_case on the original object
     const snake = field.replace(/([A-Z])/g, '_$1').toLowerCase()
     const orig = originalRef.current[field] !== undefined ? originalRef.current[field] : originalRef.current[snake]
@@ -48,7 +62,7 @@ export default function Admin(){
     return String(orig ?? '') !== String(cur ?? '')
   }
 
-  const inputClass = (field:string) => `p-3 bg-black/5 rounded border border-white/10 ${editingId && isChanged(field) ? 'ring-2 ring-green-400' : ''}`
+  const inputClass = (field:string) => `p-3 bg-white/[0.04] rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/60 ${editingId && isChanged(field) ? 'ring-2 ring-green-400' : ''}`
 
   const [toast, setToast] = useState<{message:string, type?:string} | null>(null)
   const showToast = (msg:string, type?:string) => { setToast({message:msg,type}); setTimeout(()=>setToast(null), 3000) }
@@ -66,6 +80,8 @@ export default function Admin(){
   }
 
   const filteredPublished = publishedCars.filter(p=>{
+    const listingType = String(p.listing_type || 'dealer') === 'owner' ? 'owner' : 'dealer'
+    if(publishedScope !== 'all' && listingType !== publishedScope) return false
     if(!searchTerm) return true
     const s = String(searchTerm).toLowerCase()
     return [p.title, p.make, p.model, p.vin, p.id].some((v:any)=> v && String(v).toLowerCase().includes(s))
@@ -75,19 +91,8 @@ export default function Admin(){
   const publishedSlice = filteredPublished.slice((publishedPage-1)*PAGE_SIZE, publishedPage*PAGE_SIZE)
   const [pendingFiles, setPendingFiles] = useState<Array<{file: File, url: string}>>([])
   const [isDragging, setIsDragging] = useState(false)
-
-  const removePending = (index:number)=>{
-    const pf = pendingFiles[index]
-    if(pf){ try{ URL.revokeObjectURL(pf.url) }catch(_){} }
-    const newPending = pendingFiles.filter((_,i)=>i!==index)
-    setPendingFiles(newPending)
-    // if removed was main, pick new main from remaining pending or existing images
-    setForm((f:any)=>{
-      const existing = getImagesArray()
-      const newMain = (newPending[0] && newPending[0].url) || existing[0] || ''
-      return {...f, image: newMain}
-    })
-  }
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   const getImagesArray = ()=>{
     if(!form.images) return []
@@ -95,11 +100,30 @@ export default function Admin(){
     try{ return String(form.images).split(',').map((s:string)=>s.trim()).filter(Boolean) }catch{ return [] }
   }
 
+  const setImagesOrder = (images:string[])=>{
+    const cleaned = images.map((s)=>String(s || '').trim()).filter(Boolean)
+    setForm((f:any)=>({...f, images: cleaned.join(', '), image: cleaned[0] || '' }))
+  }
+
   const removeImage = (index:number)=>{
     const arr = getImagesArray()
+    const target = arr[index]
+    if(target && target.startsWith('blob:')){
+      const pf = pendingFiles.find((p)=>p.url === target)
+      if(pf){ try{ URL.revokeObjectURL(pf.url) }catch(_){} }
+      setPendingFiles((prev)=>prev.filter((p)=>p.url !== target))
+    }
     arr.splice(index,1)
-    const cleaned = arr.filter(Boolean)
-    setForm((f:any)=>({...f, images: cleaned.join(', '), image: cleaned[0] || '' }))
+    setImagesOrder(arr)
+  }
+
+  const moveImage = (from:number, to:number)=>{
+    if(from === to) return
+    const arr = getImagesArray()
+    if(from < 0 || to < 0 || from >= arr.length || to >= arr.length) return
+    const [moved] = arr.splice(from, 1)
+    arr.splice(to, 0, moved)
+    setImagesOrder(arr)
   }
 
   // main selection removed: first image will be considered main
@@ -108,13 +132,13 @@ export default function Admin(){
   function uploadFile(file: File){
     try{
       const url = URL.createObjectURL(file)
-      setPendingFiles(p=>{
-        const next = [...p, {file, url}]
-        // if no main image yet, set preview main to first pending
-        if(!form.image && next[0]){
-          setForm((f:any)=>({...f, image: next[0].url}))
-        }
-        return next
+      setPendingFiles((p)=> [...p, {file, url}])
+      setForm((f:any)=>{
+        const current = Array.isArray(f.images)
+          ? f.images
+          : (f.images ? String(f.images).split(',').map((s:string)=>s.trim()).filter(Boolean) : [])
+        const next = [...current, url]
+        return {...f, images: next.join(', '), image: next[0] || ''}
       })
       setStatus('File queued (not uploaded)')
     }catch(e){
@@ -127,46 +151,68 @@ export default function Admin(){
     e.preventDefault()
     setStatus('Publishing...')
     const car: any = Object.assign({}, form)
+    if(!String(car.title || '').trim()){
+      setStatus('Вкажіть назву авто')
+      showToast('Назва обовʼязкова', 'error')
+      return
+    }
+    car.price_pln = form.pricePLN !== '' ? Number(String(form.pricePLN).replace(/[^0-9.,]/g, '').replace(',', '.')) : null
+    car.price_usd = form.priceUSD !== '' ? Number(String(form.priceUSD).replace(/[^0-9.,]/g, '').replace(',', '.')) : null
+    car.listing_type = form.listingType === 'owner' ? 'owner' : 'dealer'
+    if(!Number.isFinite(car.price_pln)) car.price_pln = null
+    if(!Number.isFinite(car.price_usd)) car.price_usd = null
+    if(car.price_pln === null && car.price_usd === null){
+      setStatus('Вкажіть ціну в PLN або USD')
+      showToast('Додайте хоча б одну ціну', 'error')
+      return
+    }
     if(car.images && typeof car.images === 'string'){
       car.images = car.images.split(',').map((s:string)=>s.trim()).filter(Boolean)
     }
     // if there are pending files, upload them now and merge into images
     if(pendingFiles.length>0){
-      const uploadedUrls:string[] = []
-      for(const pf of pendingFiles){
-        try{
-          setStatus('Uploading file...')
-          const fd = new FormData()
-          fd.append('file', pf.file)
-          const res = await fetch('/api/admin/upload', {method:'POST', body: fd})
-          const data = await res.json()
-          if(res.ok && data.url){
-            uploadedUrls.push(data.url)
-          }else{
-            console.warn('upload failed for file', data)
+      const pendingByUrl = new Map(pendingFiles.map((pf)=>[pf.url, pf.file]))
+      const ordered = car.images && Array.isArray(car.images) ? car.images.slice() : []
+      const resolved:string[] = []
+
+      for(const it of ordered){
+        const img = typeof it === 'string' ? it.trim() : ''
+        if(!img) continue
+        if(img.startsWith('blob:')){
+          const file = pendingByUrl.get(img)
+          if(!file) continue
+          try{
+            setStatus('Uploading file...')
+            const fd = new FormData()
+            fd.append('file', file)
+            const res = await fetch('/api/admin/upload', {method:'POST', body: fd})
+            const data = await res.json()
+            if(res.ok && data.url){
+              resolved.push(data.url)
+            }else{
+              console.warn('upload failed for file', data)
+            }
+          }catch(err){
+            console.error('upload error', err)
           }
-        }catch(err){
-          console.error('upload error', err)
-        }finally{
-          // revoke preview URL
-          try{ URL.revokeObjectURL(pf.url) }catch(_){}
+        }else{
+          resolved.push(img)
         }
       }
-      // prepend uploaded urls to existing images and clean
-      const current = car.images && Array.isArray(car.images) ? car.images.slice() : []
-      // remove any temporary object URLs (blob:...) from current
-      const cleanedCurrent = current.filter((u:any)=> u && typeof u === 'string' && !u.startsWith('blob:'))
-      const merged = [...uploadedUrls, ...cleanedCurrent].filter(Boolean)
-      // dedupe while preserving order
-      car.images = Array.from(new Set(merged))
-      // ensure the main image is the first uploaded public URL (not a blob: preview)
-      if(uploadedUrls.length>0){
-        car.image = uploadedUrls[0]
-      }else if(!car.image && car.images.length>0){
-        car.image = car.images[0]
-      }
-      // clear pending files
+
+      car.images = Array.from(new Set(resolved.filter(Boolean)))
+      car.image = car.images[0] || null
+
+      pendingFiles.forEach((pf)=>{ try{ URL.revokeObjectURL(pf.url) }catch(_){} })
       setPendingFiles([])
+    }
+
+    if(car.images && Array.isArray(car.images)){
+      car.images = car.images.filter((u:any)=>u && typeof u === 'string' && !u.startsWith('blob:'))
+      if(car.images.length === 0) car.images = null
+    }
+    if(!car.image && car.images && Array.isArray(car.images) && car.images.length > 0){
+      car.image = car.images[0]
     }
     // if editing an existing car, call update endpoint
     let data:any = null
@@ -181,7 +227,7 @@ export default function Admin(){
         }
         setEditingId(null)
         originalRef.current = null
-        setForm({ title:'', make:'', model:'', generation:'', year:'', km:'', price:'', images:'', image:'', description:'', vin:'', engineVolume:'', power:'', drivetrain:'', emissionStandard:'', bodyType:'', color:'' })
+        setForm(emptyForm)
         showToast('Saved')
       }else{
         setStatus(data.error || 'Error')
@@ -194,7 +240,7 @@ export default function Admin(){
         if(data && data.car){
           setPublishedCars(prev => [data.car, ...prev])
         }
-        setForm({ title:'', make:'', model:'', generation:'', year:'', km:'', price:'', images:'', image:'', description:'', vin:'', engineVolume:'', power:'', drivetrain:'', emissionStandard:'', bodyType:'', color:'' })
+        setForm(emptyForm)
         showToast('Created')
       }else{
         setStatus(data.error || 'Error')
@@ -210,11 +256,32 @@ export default function Admin(){
       <Head>
         <title>Admin — Add Car</title>
       </Head>
-      <main className="container-wide py-8">
+      <main className="container-wide py-6 sm:py-8 relative">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_at_top,rgba(180,136,107,0.18),transparent_65%)]" />
         <Header />
-        <h1 className="text-2xl font-serif mb-4">Admin — Додати машину</h1>
-        <form ref={formRef} onSubmit={submit} className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl items-start">
-          <div className="md:col-span-2 grid gap-3">
+
+        <section className="relative z-10 premium-card rounded-2xl p-4 sm:p-6 border border-white/10 mt-5">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+            <div>
+              <div className="text-xs uppercase tracking-[0.18em] text-white/55">Admin Panel</div>
+              <h1 className="text-2xl sm:text-3xl font-semibold mt-1">Керування автопарком</h1>
+              <p className="muted mt-1 text-sm">Додавай, редагуй і публікуй авто в єдиному преміум-інтерфейсі.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                <div className="text-white/55 text-xs">Записів</div>
+                <div className="font-semibold">{publishedCars.length}</div>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                <div className="text-white/55 text-xs">Статус</div>
+                <div className="font-semibold truncate max-w-[140px]">{status || 'Готово'}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <form ref={formRef} onSubmit={submit} className="relative z-10 grid grid-cols-1 xl:grid-cols-12 gap-6 mt-6 items-start">
+          <div className="xl:col-span-8 grid gap-3 premium-card rounded-2xl p-4 sm:p-5 border border-white/10">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-medium">{editingId ? 'Редагування авто' : 'Додати машину'}</h2>
               {editingId && <div className="text-sm text-white/60">Редагування: {editingId}</div>}
@@ -277,7 +344,7 @@ export default function Admin(){
               <input value={form.color} onChange={e=>setForm((f:any)=>({...f,color:e.target.value}))} placeholder="Колір" className={`${inputClass('color')}`} />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <select value={form.gearbox} onChange={e=>setForm((f:any)=>({...f,gearbox:e.target.value}))} className={`${inputClass('gearbox')}`}>
                 <option value="">КПП</option>
                 <option value="Manual">Manual</option>
@@ -293,8 +360,17 @@ export default function Admin(){
                 <option value="Electric">Electric</option>
                 <option value="LPG">LPG</option>
               </select>
-              <input value={form.price} onChange={e=>setForm((f:any)=>({...f,price:e.target.value}))} placeholder="€7,500" className={`${inputClass('price')}`} />
+              <input value={form.pricePLN} onChange={e=>setForm((f:any)=>({...f,pricePLN:e.target.value}))} placeholder="39990" className={`${inputClass('pricePLN')}`} />
+              <input value={form.priceUSD} onChange={e=>setForm((f:any)=>({...f,priceUSD:e.target.value}))} placeholder="9990" className={`${inputClass('priceUSD')}`} />
             </div>
+            <div>
+              <label className="text-sm muted">Куди публікувати</label>
+              <select value={form.listingType} onChange={e=>setForm((f:any)=>({...f,listingType:e.target.value}))} className={`w-full mt-1 ${inputClass('listingType')}`}>
+                <option value="dealer">Основний каталог BAO AUTO</option>
+                <option value="owner">Авто від власників</option>
+              </select>
+            </div>
+            <div className="text-xs muted -mt-1">Два окремі поля: ціна в PLN і ціна в USD. Ніякої автоматичної конвертації.</div>
             
 
             <label className="text-sm muted">Опис</label>
@@ -303,12 +379,12 @@ export default function Admin(){
             {/* removed admin secret and Publish all per request */}
           </div>
 
-          <div className="md:col-span-1">
+          <div className="xl:col-span-4 premium-card rounded-2xl p-4 sm:p-5 border border-white/10">
             <div className="mb-4">
               <div className="text-sm muted mb-2">Прев'ю</div>
-              <div className="w-full h-48 bg-black/5 rounded overflow-hidden flex items-center justify-center">
-                { (pendingFiles[0] && pendingFiles[0].url) || (form.images && String(form.images).split(',')[0]?.trim()) || form.image ? (
-                  <img src={(pendingFiles[0] && pendingFiles[0].url) || (form.images && String(form.images).split(',')[0]?.trim()) || form.image} alt="preview" className="w-full h-full object-cover" />
+              <div className="w-full h-52 bg-black/25 rounded-xl overflow-hidden flex items-center justify-center border border-white/10">
+                { (form.images && String(form.images).split(',')[0]?.trim()) || form.image ? (
+                  <img src={(form.images && String(form.images).split(',')[0]?.trim()) || form.image} alt="preview" className="w-full h-full object-cover" />
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-2 text-muted">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -327,29 +403,29 @@ export default function Admin(){
                     onDragOver={(e)=>{ e.preventDefault(); setIsDragging(true) }}
                     onDragEnter={(e)=>{ e.preventDefault(); setIsDragging(true) }}
                     onDragLeave={(e)=>{ e.preventDefault(); setIsDragging(false) }}
-                    className={`w-full p-4 border-2 border-dashed rounded text-center bg-black/3 ${isDragging ? 'border-accent bg-[color:var(--accent)]/10 animate-pulse' : 'border-white/10'}`}>
+                    className={`w-full p-4 border-2 border-dashed rounded-xl text-center bg-black/20 ${isDragging ? 'border-accent bg-[color:var(--accent)]/10 animate-pulse' : 'border-white/10'}`}>
                     <div className="muted">{isDragging ? 'Відпустіть, щоб завантажити' : 'Перекиньте файли сюди або натисніть "Вибрати"'}</div>
                     <div className="mt-3 flex items-center justify-center gap-2">
                       <input id="file-input" type="file" multiple className="hidden" onChange={async (e)=>{ const files = Array.from(e.target.files||[]); for(const f of files) await uploadFile(f) }} />
-                      <label htmlFor="file-input" className="px-4 py-2 bg-white text-[var(--accent)] rounded cursor-pointer">Вибрати</label>
+                      <label htmlFor="file-input" className="px-4 py-2 bg-[var(--accent)] text-black rounded-lg cursor-pointer font-semibold">Вибрати</label>
                     </div>
                     <div className="mt-3 text-xs muted">{isDragging ? 'Файли готові до завантаження' : "Завантажені фото з'являться у прев'ю зверху."}</div>
                   </div>
                 
                   {/* Gallery thumbnails: pending and existing */}
                   <div className="mt-4 grid grid-cols-4 gap-2">
-                    {pendingFiles.map((p, i)=> (
-                      <div key={`pending-${i}`} className="relative w-full h-20 rounded overflow-hidden bg-black/10">
-                        <img src={p.url} className="w-full h-full object-cover" />
-                        <div className="absolute right-1 top-1 flex gap-1">
-                          <button type="button" onClick={()=>removePending(i)} title="Remove" className="bg-white/80 text-black px-2 py-1 rounded text-xs">✕</button>
-                        </div>
-                      </div>
-                    ))}
-
                     {getImagesArray().map((url: string, i: number)=> (
-                      <div key={`img-${i}`} className="relative w-full h-20 rounded overflow-hidden bg-black/10">
+                      <div
+                        key={`img-${i}`}
+                        draggable
+                        onDragStart={()=>setDragIndex(i)}
+                        onDragOver={(e)=>{ e.preventDefault(); setDragOverIndex(i) }}
+                        onDrop={(e)=>{ e.preventDefault(); if(dragIndex !== null) moveImage(dragIndex, i); setDragIndex(null); setDragOverIndex(null) }}
+                        onDragEnd={()=>{ setDragIndex(null); setDragOverIndex(null) }}
+                        className={`relative w-full h-20 rounded overflow-hidden bg-black/10 border ${dragOverIndex === i ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]' : 'border-white/10'}`}>
                         <img src={url} className="w-full h-full object-cover" />
+                        <div className="absolute left-1 top-1 text-[10px] px-1.5 py-0.5 rounded bg-black/60 text-white/90">{i === 0 ? 'Головне' : i+1}</div>
+                        {url.startsWith('blob:') && <div className="absolute left-1 bottom-1 text-[10px] px-1.5 py-0.5 rounded bg-[var(--accent)] text-black font-semibold">new</div>}
                         <div className="absolute right-1 top-1 flex gap-1">
                           <button type="button" onClick={()=>removeImage(i)} title="Remove" className="bg-white/80 text-black px-2 py-1 rounded text-xs">✕</button>
                         </div>
@@ -358,12 +434,12 @@ export default function Admin(){
                   </div>
                 </div>
 
-            <div className="flex gap-2">
-              <button type="submit" className="px-4 py-3 bg-white text-[var(--accent)] rounded flex-1">{editingId ? 'Save changes' : 'Publish'}</button>
+            <div className="flex gap-2 mt-4">
+              <button type="submit" className="px-4 py-3 bg-[var(--accent)] text-black rounded-xl flex-1 font-semibold">{editingId ? 'Save changes' : 'Publish'}</button>
               {editingId ? (
-                <button type="button" onClick={()=>{ pendingFiles.forEach(p=>{ try{ URL.revokeObjectURL(p.url) }catch(_){} }); setPendingFiles([]); setEditingId(null); originalRef.current = null; setForm({title:'', make:'', model:'', generation:'', year:'', km:'', price:'', images:'', image:'', description:'', vin:'', engineVolume:'', power:'', drivetrain:'', emissionStandard:'', bodyType:'', color:''}); setStatus('Edit cancelled'); showToast('Edit cancelled') }} className="px-4 py-3 rounded border flex-1">Cancel</button>
+                <button type="button" onClick={()=>{ pendingFiles.forEach(p=>{ try{ URL.revokeObjectURL(p.url) }catch(_){} }); setPendingFiles([]); setEditingId(null); originalRef.current = null; setForm(emptyForm); setStatus('Edit cancelled'); showToast('Edit cancelled') }} className="px-4 py-3 rounded-xl border border-white/20 flex-1">Cancel</button>
               ) : (
-                <button type="button" onClick={()=>{ pendingFiles.forEach(p=>{ try{ URL.revokeObjectURL(p.url) }catch(_){} }); setPendingFiles([]); setForm({title:'', make:'', model:'', generation:'', year:'', km:'', price:'', images:'', image:'', description:'', vin:'', engineVolume:'', power:'', drivetrain:'', emissionStandard:'', bodyType:'', color:''}); setStatus('Cleared') }} className="px-4 py-3 rounded border flex-1">Clear</button>
+                <button type="button" onClick={()=>{ pendingFiles.forEach(p=>{ try{ URL.revokeObjectURL(p.url) }catch(_){} }); setPendingFiles([]); setForm(emptyForm); setStatus('Cleared') }} className="px-4 py-3 rounded-xl border border-white/20 flex-1">Clear</button>
               )}
             </div>
             <div className="mt-3 muted text-sm">{status}</div>
@@ -372,28 +448,54 @@ export default function Admin(){
 
         {/* local queue removed — publishing happens directly from the form */}
 
-        <section className="mt-8">
+        <section className="relative z-10 mt-8 premium-card rounded-2xl p-4 sm:p-5 border border-white/10">
           <h2 className="font-serif text-2xl mb-4">Опубліковані авто</h2>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <button
+              type="button"
+              onClick={()=>{ setPublishedScope('all'); setPage(1) }}
+              className={`px-3 py-1.5 rounded-lg border text-sm ${publishedScope === 'all' ? 'bg-white text-[var(--accent)] border-white/30' : 'border-white/10 text-white/80 hover:bg-white/10'}`}>
+              Усі
+            </button>
+            <button
+              type="button"
+              onClick={()=>{ setPublishedScope('dealer'); setPage(1) }}
+              className={`px-3 py-1.5 rounded-lg border text-sm ${publishedScope === 'dealer' ? 'bg-white text-[var(--accent)] border-white/30' : 'border-white/10 text-white/80 hover:bg-white/10'}`}>
+              Каталог BAO AUTO
+            </button>
+            <button
+              type="button"
+              onClick={()=>{ setPublishedScope('owner'); setPage(1) }}
+              className={`px-3 py-1.5 rounded-lg border text-sm ${publishedScope === 'owner' ? 'bg-white text-[var(--accent)] border-white/30' : 'border-white/10 text-white/80 hover:bg-white/10'}`}>
+              Авто від власників
+            </button>
+          </div>
           <div className="flex gap-2 items-center mb-4">
-            <input value={searchTerm} onChange={e=>{ setSearchTerm(e.target.value); setPage(1) }} placeholder="Пошук по назві, марці, моделі, VIN" className="p-2 rounded border bg-black/5 flex-1" />
+            <input value={searchTerm} onChange={e=>{ setSearchTerm(e.target.value); setPage(1) }} placeholder="Пошук по назві, марці, моделі, VIN" className="p-2.5 rounded-xl border border-white/10 bg-white/[0.03] flex-1" />
             <div className="text-sm muted">{filteredPublished.length} записів</div>
           </div>
           {loadingPublished && <div className="muted">Завантаження...</div>}
           {!loadingPublished && publishedCars.length===0 && <div className="muted">Поки що немає опублікованих авто.</div>}
           <div className="grid gap-4 mt-4 max-w-4xl">
             {publishedSlice.map((p,i)=> (
-              <div key={p.id || i} className={"p-4 bg-gradient-to-br from-black/5 to-black/2 rounded-2xl shadow-sm flex items-start gap-4" + (editingId === p.id ? ' ring-2 ring-[color:var(--accent)]' : '')}>
+              <div key={p.id || i} className={"p-4 bg-gradient-to-br from-white/[0.05] to-black/20 rounded-2xl shadow-sm flex items-start gap-4 border border-white/10" + (editingId === p.id ? ' ring-2 ring-[color:var(--accent)]' : '')}>
                 <div className="w-36 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-black/10">
                     <img src={(p.images && p.images[0]) || p.image || '/images/placeholder.png'} alt={p.title || 'preview'} className="w-full h-full object-cover" />
                   </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <div className="font-semibold text-lg">{p.title || p.make}</div>
+                      <div className="font-semibold text-lg flex items-center gap-2">
+                        <span>{p.title || p.make}</span>
+                        <span className={`text-[11px] px-2 py-0.5 rounded-full border ${String(p.listing_type || 'dealer') === 'owner' ? 'border-emerald-400/40 text-emerald-300' : 'border-white/20 text-white/70'}`}>
+                          {String(p.listing_type || 'dealer') === 'owner' ? 'Від власника' : 'Каталог BAO AUTO'}
+                        </span>
+                      </div>
                       <div className="muted text-sm">{p.year} · {p.km ? p.km.toLocaleString('en-US') : '—'} km · {p.gearbox}</div>
                     </div>
                     <div className="text-right">
-                      <div className="bg-white text-[var(--accent)] font-semibold px-3 py-1 rounded-full shadow-sm">{p.price ? formatPLN(p.price) : ''}</div>
+                      <div className="bg-white text-[var(--accent)] font-semibold px-3 py-1 rounded-full shadow-sm">{getCarPricePLN(p) != null ? formatPLN(getCarPricePLN(p)) : ''}</div>
+                      <div className="mt-1 text-xs muted">{getCarPriceUSD(p) != null ? formatUSD(getCarPriceUSD(p)) : ''}</div>
                     </div>
                   </div>
                     <div className="mt-3 flex gap-2">

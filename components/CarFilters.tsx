@@ -39,6 +39,19 @@ export default function CarFilters({makes, years, fuels, gearboxes, drivetrains,
     make || fuel || gearbox || drivetrain || bodyType || emission || yearFrom || yearTo || priceMin !== '' || priceMax !== ''
   )
 
+  const activeCount = [
+    make,
+    fuel,
+    gearbox,
+    drivetrain,
+    bodyType,
+    emission,
+    yearFrom,
+    yearTo,
+    priceMin !== '' ? String(priceMin) : '',
+    priceMax !== '' ? String(priceMax) : ''
+  ].filter(Boolean).length
+
   function resetAll(){
     setMake('')
     setFuel('')
@@ -55,12 +68,12 @@ export default function CarFilters({makes, years, fuels, gearboxes, drivetrains,
 
   return (
     <div className="premium-card p-3 sm:p-4 rounded-2xl mb-6 border border-white/10">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0">
           <div className="text-xs uppercase tracking-[0.16em] text-white/55">Розумний підбір</div>
-          <div className="text-sm text-white/75 mt-0.5">Швидко фільтруй та сортуй пропозиції</div>
+          <div className="text-sm text-white/75 mt-0.5">{hasActiveFilters ? `Активно фільтрів: ${activeCount}` : 'Налаштуй підбір під свій бюджет'}</div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto">
           {hasActiveFilters && (
             <button type="button" onClick={resetAll} className="px-3 py-2 rounded-lg border border-white/15 text-xs sm:text-sm text-white/80 hover:bg-white/10">
               Скинути
@@ -68,66 +81,64 @@ export default function CarFilters({makes, years, fuels, gearboxes, drivetrains,
           )}
           <button type="button" onClick={()=>setExpanded(v=>!v)} className="px-3 py-2 rounded-lg border border-white/15 text-xs sm:text-sm text-white/90 hover:bg-white/10 inline-flex items-center gap-2">
             <SlidersHorizontal className="h-4 w-4" />
-            <span>{expanded ? 'Менше фільтрів' : 'Більше фільтрів'}</span>
+            <span>{expanded ? 'Сховати фільтр' : 'Відкрити фільтр'}</span>
             <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
           </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3">
-        <div>
-          <label className="muted text-xs">Марка</label>
-          <select value={make} onChange={e=>setMake(e.target.value)} className="w-full mt-1 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
-            <option value="">Усі</option>
-            {makes.map(m=> <option key={m} value={m}>{m}</option>)}
-          </select>
-        </div>
-
-        <div>
-          <label className="muted text-xs">Паливо</label>
-          <select value={fuel} onChange={e=>setFuel(e.target.value)} className="w-full mt-1 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
-            <option value="">Усі</option>
-            {fuels.map(f=> <option key={f} value={f}>{f}</option>)}
-          </select>
-        </div>
-
-        <div>
-          <label className="muted text-xs">КПП</label>
-          <select value={gearbox} onChange={e=>setGearbox(e.target.value)} className="w-full mt-1 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
-            <option value="">Усі</option>
-            {gearboxes.map(g=> <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
-
-        <div>
-          <label className="muted text-xs">Рік</label>
-          <div className="flex gap-2 mt-1">
-            <select value={yearFrom} onChange={e=>setYearFrom(e.target.value)} className="w-1/2 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
-              <option value="">від</option>
-              {years.map(y=> <option key={`from-${y}`} value={String(y)}>{y}</option>)}
-            </select>
-            <select value={yearTo} onChange={e=>setYearTo(e.target.value)} className="w-1/2 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
-              <option value="">до</option>
-              {years.map(y=> <option key={`to-${y}`} value={String(y)}>{y}</option>)}
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label className="muted text-xs">Сортування</label>
-          <select value={sortBy} onChange={e=>setSortBy(e.target.value)} className="w-full mt-1 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
-            <option value="yearDesc">Спочатку новіші</option>
-            <option value="priceAsc">Ціна: дешевші</option>
-            <option value="priceDesc">Ціна: дорожчі</option>
-            <option value="kmAsc">Пробіг: менший</option>
-            <option value="kmDesc">Пробіг: більший</option>
-          </select>
         </div>
       </div>
 
       <div className={`grid transition-all duration-300 ease-out ${expanded ? 'grid-rows-[1fr] opacity-100 mt-3' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
         <div className={`overflow-hidden ${expanded ? 'pointer-events-auto' : 'pointer-events-none'}`} aria-hidden={!expanded}>
           <div className="pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3">
+          <div>
+            <label className="muted text-xs">Марка</label>
+            <select value={make} onChange={e=>setMake(e.target.value)} className="w-full mt-1 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
+              <option value="">Усі</option>
+              {makes.map(m=> <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="muted text-xs">Паливо</label>
+            <select value={fuel} onChange={e=>setFuel(e.target.value)} className="w-full mt-1 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
+              <option value="">Усі</option>
+              {fuels.map(f=> <option key={f} value={f}>{f}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="muted text-xs">КПП</label>
+            <select value={gearbox} onChange={e=>setGearbox(e.target.value)} className="w-full mt-1 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
+              <option value="">Усі</option>
+              {gearboxes.map(g=> <option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="muted text-xs">Рік</label>
+            <div className="flex gap-2 mt-1">
+              <select value={yearFrom} onChange={e=>setYearFrom(e.target.value)} className="w-1/2 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
+                <option value="">від</option>
+                {years.map(y=> <option key={`from-${y}`} value={String(y)}>{y}</option>)}
+              </select>
+              <select value={yearTo} onChange={e=>setYearTo(e.target.value)} className="w-1/2 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
+                <option value="">до</option>
+                {years.map(y=> <option key={`to-${y}`} value={String(y)}>{y}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="muted text-xs">Сортування</label>
+            <select value={sortBy} onChange={e=>setSortBy(e.target.value)} className="w-full mt-1 h-10 px-3 rounded-lg bg-transparent border border-white/10 text-sm">
+              <option value="yearDesc">Спочатку новіші</option>
+              <option value="priceAsc">Ціна: дешевші</option>
+              <option value="priceDesc">Ціна: дорожчі</option>
+              <option value="kmAsc">Пробіг: менший</option>
+              <option value="kmDesc">Пробіг: більший</option>
+            </select>
+          </div>
+
           <div>
             <label className="muted text-xs">Ціна (PLN)</label>
             <div className="flex gap-2 mt-1">
@@ -162,7 +173,7 @@ export default function CarFilters({makes, years, fuels, gearboxes, drivetrains,
 
           <div className="flex gap-2 mt-1">
             <div className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 flex items-center">
-              Активних фільтрів: {hasActiveFilters ? 'є' : 'немає'}
+              Активних фільтрів: {activeCount}
             </div>
           </div>
           </div>

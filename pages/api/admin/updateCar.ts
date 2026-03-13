@@ -35,8 +35,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if((car as any).engineVolume && !(car as any).engine_volume) car.engine_volume = (car as any).engineVolume
     if((car as any).bodyType && !(car as any).body_type) car.body_type = (car as any).bodyType
     if((car as any).emissionStandard && !(car as any).emission_standard) car.emission_standard = (car as any).emissionStandard
-    if((car as any).drivetrain && !(car as any).drivetrain) car.drivetrain = (car as any).drivetrain
-    if((car as any).power && !(car as any).power) car.power = (car as any).power
+    if((car as any).drivetrain && !(car as any).drive_train) car.drive_train = (car as any).drivetrain
+    if((car as any).powerHp && !(car as any).power) car.power = (car as any).powerHp
 
     // helper to coerce numeric-like values to number or null
     const toNumberOrNull = (v:any, isFloat = false) => {
@@ -54,8 +54,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const payload:any = {}
+
+    const toPricePLN = (v:any) => {
+      if(v === undefined) return undefined
+      if(v === null) return null
+      if(typeof v === 'number') return Number.isFinite(v) ? v : null
+      if(typeof v === 'string'){
+        const s = v.trim()
+        if(s === '') return null
+        const cleaned = s.replace(/[^0-9\,\.]/g, '').replace(',', '.')
+        const n = parseFloat(cleaned)
+        return Number.isFinite(n) ? n : null
+      }
+      return null
+    }
     // only set known fields to avoid overwriting unintentionally
-    const keys = ['make','title','model','generation','year','km','gearbox','fuel','price','image','images','vin','engine_volume','power','drivetrain','emission_standard','body_type','color','equipment','description']
+    const keys = ['make','title','model','generation','year','km','gearbox','fuel','price_pln','price_usd','listing_type','image','images','vin','engine_volume','power','drivetrain','emission_standard','body_type','color','equipment','description']
     for(const k of keys){
       if(!(k in car)) continue
       // coerce numeric fields to numbers or null to avoid passing empty strings to Postgres
@@ -79,6 +93,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if(v !== undefined) payload[k] = v
         continue
       }
+      if(k === 'price_pln'){
+        const v = toPricePLN((car as any)[k])
+        if(v !== undefined) payload[k] = v
+        continue
+      }
+      if(k === 'price_usd'){
+        const v = toPricePLN((car as any)[k])
+        if(v !== undefined) payload[k] = v
+        continue
+      }
       // sanitize images field: ensure array or null or comma-joined string
       if(k === 'images'){
         let val = (car as any)[k]
@@ -94,6 +118,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       payload[k] = (car as any)[k]
+    }
+
+    // Accept common admin field aliases
+    if(payload.price_pln === undefined){
+      const aliasPrice = toPricePLN((car as any).pricePLN ?? (car as any).price)
+      if(aliasPrice !== undefined) payload.price_pln = aliasPrice
+    }
+    if(payload.price_usd === undefined){
+      const aliasUsd = toPricePLN((car as any).priceUSD)
+      if(aliasUsd !== undefined) payload.price_usd = aliasUsd
+    }
+    if(payload.listing_type === undefined){
+      const lt = String((car as any).listing_type ?? (car as any).listingType ?? '').toLowerCase()
+      if(lt) payload.listing_type = lt === 'owner' ? 'owner' : 'dealer'
     }
 
     // if images were provided, attempt to remove any images that existed before but were removed in this update
@@ -140,7 +178,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }catch(e){ console.warn('updateCar: error checking previous images', e) }
     }
 
-    const { data, error } = await supabase.from('cars').update(payload).eq('id', car.id).select().single()
+    let { data, error } = await supabase.from('cars').update(payload).eq('id', car.id).select().single()
+    if(error && /listing_type/i.test(String(error.message || ''))){
+      const fallback = { ...payload }
+      delete fallback.listing_type
+      const retry = await supabase.from('cars').update(fallback).eq('id', car.id).select().single()
+      data = retry.data as any
+      error = retry.error as any
+    }
     if(error) return res.status(500).json({error: error.message})
     return res.status(200).json({ok:true, car: data})
   }catch(err:any){

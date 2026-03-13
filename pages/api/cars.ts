@@ -2,6 +2,20 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { sampleCars } from '../../data/sampleCars'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse){
+  res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600')
+
+  const rawListing = String(req.query.listing || 'all').toLowerCase()
+  const listingFilter = rawListing === 'owner' || rawListing === 'owners' ? 'owner' : rawListing === 'dealer' ? 'dealer' : 'all'
+
+  const applyListingFilter = (items:any[])=>{
+    const normalized = (items || []).map((c:any)=>{
+      const listingType = String(c?.listing_type || c?.listingType || '').toLowerCase() === 'owner' ? 'owner' : 'dealer'
+      return { ...c, listing_type: listingType }
+    })
+    if(listingFilter === 'all') return normalized
+    return normalized.filter((c:any)=>c.listing_type === listingFilter)
+  }
+
   const SUPABASE_URL = process.env.SUPABASE_URL
   const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
   if(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY){
@@ -26,18 +40,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return null
           }
 
-          // normalize price_num so clients can rely on a numeric field
+          // normalize canonical price_pln
           try{
-            if(clone.price_num !== undefined && clone.price_num !== null){
-              clone.price_num = Number(clone.price_num)
+            if(clone.price_pln !== undefined && clone.price_pln !== null){
+              clone.price_pln = Number(clone.price_pln)
+            }else if(clone.pricePln !== undefined && clone.pricePln !== null){
+              clone.price_pln = Number(clone.pricePln)
+            }else if(clone.price_num !== undefined && clone.price_num !== null){
+              clone.price_pln = Number(clone.price_num)
             }else if(clone.priceNum !== undefined && clone.priceNum !== null){
-              clone.price_num = Number(clone.priceNum)
+              clone.price_pln = Number(clone.priceNum)
             }else if(clone.price !== undefined && clone.price !== null){
               const n = toNumber(clone.price)
-              if(n !== null) clone.price_num = n
+              if(n !== null) clone.price_pln = n
             }
-            // ensure it's a number or undefined
-            if(clone.price_num !== undefined && !Number.isFinite(Number(clone.price_num))) delete clone.price_num
+            if(clone.price_pln !== undefined && !Number.isFinite(Number(clone.price_pln))) delete clone.price_pln
+
+            if(clone.price_usd !== undefined && clone.price_usd !== null){
+              clone.price_usd = Number(clone.price_usd)
+            }else if(clone.priceUsd !== undefined && clone.priceUsd !== null){
+              clone.price_usd = Number(clone.priceUsd)
+            }
+            if(clone.price_usd !== undefined && !Number.isFinite(Number(clone.price_usd))) delete clone.price_usd
           }catch(_){ }
           const toPublic = async (val:any)=>{
             if(!val) return val
@@ -61,10 +85,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
           return clone
         }))
-        return res.status(200).json({cars: normalized})
+        return res.status(200).json({cars: applyListingFilter(normalized)})
       }catch(e:any){
         console.warn('image normalization failed:', e)
-        return res.status(200).json({cars: data || []})
+        return res.status(200).json({cars: applyListingFilter(data || [])})
       }
     }catch(err:any){
       console.error('supabase read error:', err.message || err)
@@ -73,5 +97,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   // fallback to local sample data
-  res.status(200).json({cars: sampleCars})
+  res.status(200).json({cars: applyListingFilter(sampleCars)})
 }
