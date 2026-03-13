@@ -22,9 +22,9 @@ export default function CarCardPremium({ car }: { car: any }) {
         {pricePLN || 'Ціну уточнюйте'}
       </div>
 
-      <div className="absolute right-3 top-3 rounded-full border border-white/20 bg-black/40 px-2.5 py-1 text-[11px] text-white/90 backdrop-blur-sm">
+      {/* <div className="absolute right-3 top-3 rounded-full border border-white/20 bg-black/40 px-2.5 py-1 text-[11px] text-white/90 backdrop-blur-sm">
         Premium Pick
-      </div>
+      </div> */}
 
       <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
         <h3 className="text-white text-base sm:text-lg font-semibold leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)] pr-2">

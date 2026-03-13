@@ -10,9 +10,9 @@ export default function BaoInfo(){
           <h3 className="text-lg sm:text-xl font-semibold tracking-wide">BAO AUTO</h3>
           <p className="mt-1 text-white/75 text-sm leading-relaxed">Автовикуп і продаж авто в Європі</p>
         </div>
-        <span className="inline-flex items-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-2.5 py-1 text-[11px] text-[var(--accent)] whitespace-nowrap">
+        {/* <span className="inline-flex items-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-2.5 py-1 text-[11px] text-[var(--accent)] whitespace-nowrap">
           Premium Service
-        </span>
+        </span> */}
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:text-sm">

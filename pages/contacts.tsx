@@ -4,25 +4,25 @@ import Footer from '../components/Footer'
 import { absoluteUrl } from '../lib/seo'
 
 const CONTACTS = {
-  phones: ['+48 600 123 456', '+380 67 123 45 67'],
+  phones: ['+48 662 722 070'],
   email: 'baoauto.sales@gmail.com',
-  address: 'Warszawa, Polska, Aleje Jerozolimskie 54',
+  address: 'Powstańców Warszawy 32, 42-271 Częstochowa, Poland',
   hours: [
-    'Пн - Пт: 09:00 - 19:00',
-    'Сб: 10:00 - 16:00',
-    'Нд: за попереднім записом'
+    'Пн - Пт: 10:00 - 19:00',
+    'Сб: 10:00 - 19:00',
+    'Нд: 10:00 - 16:00'
   ],
   socials: [
-    {label: 'Instagram', href: 'https://instagram.com/baoauto'},
-    {label: 'Telegram', href: 'https://t.me/baoauto'},
-    {label: 'Facebook', href: 'https://facebook.com/baoauto'}
+    {label: 'Instagram', href: 'https://instagram.com/perekup.pl1'},
+    {label: 'Telegram', href: 'https://t.me/perekup15'},
+    // {label: 'Facebook', href: 'https://facebook.com/baoauto'}
   ]
 }
 
 export default function ContactsPage(){
   const canonical = absoluteUrl('/contacts')
   const title = 'Контакти - BAO AUTO'
-  const description = 'Контакти BAO AUTO: телефони, адреса у Варшаві, соцмережі, графік роботи та швидкий зв\'язок для підбору авто.'
+  const description = 'Контакти BAO AUTO: телефони, адреса у Ченстохова, соцмережі, графік роботи та швидкий зв\'язок для підбору авто.'
   const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONTACTS.address)}`
 
   return (
@@ -51,8 +51,8 @@ export default function ContactsPage(){
             <div className="text-xs uppercase tracking-[0.18em] text-white/55">BAO AUTO</div>
             <h1 className="mt-2 text-3xl sm:text-4xl font-semibold">Контакти та співпраця</h1>
             <p className="mt-4 text-white/75 leading-relaxed">
-              Ми підбираємо авто з Європи під ваш бюджет, проводимо технічну та юридичну перевірку,
-              допомагаємо з логістикою та оформленням документів. Якщо хочете консультацію або підбір
+              Ми підбираємо авто з Європи під ваш бюджет, проводимо технічну перевірку,
+              допомагаємо з оформленням документів. Якщо хочете консультацію або підбір
               конкретної моделі, напишіть нам у зручному каналі.
             </p>
           </div>

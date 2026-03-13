@@ -131,10 +131,10 @@ export default function Home(){
             <div>
               <div className="text-xs uppercase tracking-[0.18em] text-white/55">BAO AUTO</div>
               <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl leading-tight font-semibold max-w-2xl">
-                Преміальний підбір авто з Європи без зайвого ризику
+                Підбір авто в Польщі без зайвого ризику
               </h1>
               <p className="mt-4 text-white/75 max-w-2xl leading-relaxed">
-                Актуальні пропозиції, чесна історія, прозорий супровід. Обирай авто через гнучкі фільтри та сортування прямо на головній.
+                Актуальні пропозиції, супровід. Обирай авто через гнучкі фільтри та сортування прямо на головній.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 <span className="rounded-full border border-white/12 bg-white/5 px-3 py-1 text-xs sm:text-sm text-white/85">Перевірені авто</span>
@@ -154,7 +154,7 @@ export default function Home(){
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 col-span-2">
                 <div className="text-xs text-white/55 uppercase tracking-[0.12em]">Фокус</div>
-                <div className="mt-1 text-sm text-white/85">Компактні фільтри, швидке сортування, преміальна видача карток.</div>
+                <div className="mt-1 text-sm text-white/85">Компактні фільтри, швидке сортування.</div>
               </div>
             </div>
           </div>
