@@ -12,7 +12,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
-        <meta property="og:site_name" content="BAO AUTO" />
+        <meta property="og:site_name" content="GameSense AUTO" />
         <meta property="og:locale" content="uk_UA" />
         <meta name="twitter:card" content="summary_large_image" />
       </Head>

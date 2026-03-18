@@ -11,8 +11,8 @@ import { absoluteUrl } from '../lib/seo'
 
 export default function Home(){
   const canonical = absoluteUrl('/')
-  const title = 'BAO AUTO - Автовикуп і підбір авто з Європи'
-  const description = 'BAO AUTO: підбір, перевірка та продаж авто з Європи. Прозора історія, гнучкі фільтри, актуальний каталог та консультація.'
+  const title = 'GameSense AUTO - Автовикуп і підбір авто з Європи'
+  const description = 'GameSense AUTO: підбір, перевірка та продаж авто з Європи. Прозора історія, гнучкі фільтри, актуальний каталог та консультація.'
 
   const [filters, setFilters] = useState({make:'', fuel:'', gearbox:'', drivetrain:'', bodyType:'', emission:'', yearFrom:'', yearTo:'', priceMin:'', priceMax:'', sortBy:'yearDesc'})
 
@@ -116,10 +116,10 @@ export default function Home(){
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
-        <meta property="og:image" content={absoluteUrl('/logo_baoauto.png')} />
+        <meta property="og:image" content={absoluteUrl('/logo.svg')} />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={absoluteUrl('/logo_baoauto.png')} />
+        <meta name="twitter:image" content={absoluteUrl('/logo.svg')} />
       </Head>
       <main className="container-wide py-6 sm:py-8 relative">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(ellipse_at_top,rgba(180,136,107,0.20),transparent_65%)]" />
@@ -129,7 +129,7 @@ export default function Home(){
           <div className="absolute -right-14 -top-16 w-64 h-64 rounded-full bg-[var(--accent)]/10 blur-3xl" />
           <div className="relative grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-6 items-center">
             <div>
-              <div className="text-xs uppercase tracking-[0.18em] text-white/55">BAO AUTO</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-white/55">GameSense AUTO</div>
               <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl leading-tight font-semibold max-w-2xl">
                 Підбір авто в Польщі без зайвого ризику
               </h1>

@@ -366,7 +366,7 @@ export default function Admin(){
             <div>
               <label className="text-sm muted">Куди публікувати</label>
               <select value={form.listingType} onChange={e=>setForm((f:any)=>({...f,listingType:e.target.value}))} className={`w-full mt-1 ${inputClass('listingType')}`}>
-                <option value="dealer">Основний каталог BAO AUTO</option>
+                <option value="dealer">Основний каталог GameSense AUTO</option>
                 <option value="owner">Авто від власників</option>
               </select>
             </div>
@@ -461,7 +461,7 @@ export default function Admin(){
               type="button"
               onClick={()=>{ setPublishedScope('dealer'); setPage(1) }}
               className={`px-3 py-1.5 rounded-lg border text-sm ${publishedScope === 'dealer' ? 'bg-white text-[var(--accent)] border-white/30' : 'border-white/10 text-white/80 hover:bg-white/10'}`}>
-              Каталог BAO AUTO
+              Каталог GameSense AUTO
             </button>
             <button
               type="button"
@@ -488,7 +488,7 @@ export default function Admin(){
                       <div className="font-semibold text-lg flex items-center gap-2">
                         <span>{p.title || p.make}</span>
                         <span className={`text-[11px] px-2 py-0.5 rounded-full border ${String(p.listing_type || 'dealer') === 'owner' ? 'border-emerald-400/40 text-emerald-300' : 'border-white/20 text-white/70'}`}>
-                          {String(p.listing_type || 'dealer') === 'owner' ? 'Від власника' : 'Каталог BAO AUTO'}
+                          {String(p.listing_type || 'dealer') === 'owner' ? 'Від власника' : 'Каталог GameSense AUTO'}
                         </span>
                       </div>
                       <div className="muted text-sm">{p.year} · {p.km ? p.km.toLocaleString('en-US') : '—'} km · {p.gearbox}</div>

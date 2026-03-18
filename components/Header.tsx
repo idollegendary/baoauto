@@ -22,8 +22,8 @@ export default function Header(){
     <header className="py-4 sticky top-0 z-40 bg-[var(--bg)]/90 backdrop-blur-sm border-b border-white/5">
       <div className="container-wide flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <Image src="/logo_baoauto.png" alt="BAO AUTO" width={48} height={48} className="w-12 h-12 rounded-full object-cover" />
-          <span className="text-2xl font-semibold">BAO AUTO</span>
+          <Image src="/logo.svg" alt="GameSense AUTO" width={48} height={48} className="w-12 h-12 rounded-full object-cover" />
+          <span className="text-2xl font-semibold">GameSense AUTO</span>
         </Link>
 
         <nav className="hidden sm:flex gap-6 items-center">

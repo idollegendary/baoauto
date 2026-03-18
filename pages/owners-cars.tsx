@@ -9,8 +9,8 @@ import { absoluteUrl } from '../lib/seo'
 
 export default function OwnersCars(){
   const canonical = absoluteUrl('/owners-cars')
-  const title = 'Авто від власників - BAO AUTO'
-  const description = 'Оголошення авто від власників: приватні пропозиції з підтримкою BAO AUTO та доступом до нашої клієнтської бази.'
+  const title = 'Авто від власників - GameSense AUTO'
+  const description = 'Оголошення авто від власників: приватні пропозиції з підтримкою GameSense AUTO та доступом до нашої клієнтської бази.'
 
   const pageSize = 18
   const [page, setPage] = useState(1)
@@ -128,20 +128,20 @@ export default function OwnersCars(){
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
-        <meta property="og:image" content={absoluteUrl('/logo_baoauto.png')} />
+        <meta property="og:image" content={absoluteUrl('/logo.svg')} />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={absoluteUrl('/logo_baoauto.png')} />
+        <meta name="twitter:image" content={absoluteUrl('/logo.svg')} />
       </Head>
 
       <main className="container-wide py-8">
         <Header />
         <h1 className="font-serif text-3xl mb-2">Авто від власників</h1>
-        <p className="text-white/70 mb-6">Приватні оголошення, які просуваються через базу клієнтів BAO AUTO.</p>
+        <p className="text-white/70 mb-6">Приватні оголошення, які просуваються через базу клієнтів GameSense AUTO.</p>
 
         <section className="mb-6 rounded-2xl border border-amber-300/30 bg-amber-500/10 px-4 py-4">
           <p className="text-sm sm:text-base text-amber-100 leading-relaxed">
-            ❗ Автомобіль продається напряму від власника. BAO AUTO лише публікує оголошення та не несе відповідальності за стан автомобіля і документи.
+            ❗ Автомобіль продається напряму від власника. GameSense AUTO лише публікує оголошення та не несе відповідальності за стан автомобіля і документи.
           </p>
           <p className="text-sm sm:text-base text-amber-100 leading-relaxed mt-3">
             ❗ Не рекомендуємо робити жодних передоплат або переказів без особистого огляду автомобіля.

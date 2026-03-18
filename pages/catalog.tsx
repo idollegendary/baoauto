@@ -9,8 +9,8 @@ import { absoluteUrl } from '../lib/seo'
 
 export default function Catalog(){
   const canonical = absoluteUrl('/catalog')
-  const title = 'Каталог авто - BAO AUTO'
-  const description = 'Каталог BAO AUTO: перевірені авто з Європи з фільтрами за ціною, роком, пробігом, паливом та типом кузова.'
+  const title = 'Каталог авто - GameSense AUTO'
+  const description = 'Каталог GameSense AUTO: перевірені авто з Європи з фільтрами за ціною, роком, пробігом, паливом та типом кузова.'
 
   const pageSize = 18
   const [page, setPage] = useState(1)
@@ -127,10 +127,10 @@ export default function Catalog(){
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
-        <meta property="og:image" content={absoluteUrl('/logo_baoauto.png')} />
+        <meta property="og:image" content={absoluteUrl('/logo.svg')} />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={absoluteUrl('/logo_baoauto.png')} />
+        <meta name="twitter:image" content={absoluteUrl('/logo.svg')} />
       </Head>
       <main className="container-wide py-8">
         <Header />

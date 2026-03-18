@@ -1,13 +1,13 @@
 export default function BaoInfo(){
-  const phone = '+48-662-722-070'
-  const address = 'Częstochowa ul. powstańców warszawy 32'
+  const phone = '+48-790-617-303'
+  const address = 'GameSense AUTO, Poland'
   const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
 
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.02] p-3 sm:p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg sm:text-xl font-semibold tracking-wide">BAO AUTO</h3>
+          <h3 className="text-lg sm:text-xl font-semibold tracking-wide">GameSense AUTO</h3>
           <p className="mt-1 text-white/75 text-sm leading-relaxed">Автовикуп і продаж авто в Європі</p>
         </div>
         {/* <span className="inline-flex items-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-2.5 py-1 text-[11px] text-[var(--accent)] whitespace-nowrap">

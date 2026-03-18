@@ -4,25 +4,25 @@ import Footer from '../components/Footer'
 import { absoluteUrl } from '../lib/seo'
 
 const CONTACTS = {
-  phones: ['+48 662 722 070'],
-  email: 'baoauto.sales@gmail.com',
-  address: 'Powstańców Warszawy 32, 42-271 Częstochowa, Poland',
+  phones: ['+48 790 617 303'],
+  email: 'gamesense.sales@gmail.com',
+  address: 'GameSense AUTO, Poland',
   hours: [
-    'Пн - Пт: 10:00 - 19:00',
-    'Сб: 10:00 - 19:00',
-    'Нд: 10:00 - 16:00'
+    'Пн - Пт: 10:00 - 20:00',
+    'Сб: 10:00 - 20:00',
+    'Нд: 10:00 - 18:00'
   ],
   socials: [
-    {label: 'Instagram', href: 'https://instagram.com/perekup.pl1'},
-    {label: 'Telegram', href: 'https://t.me/perekup15'},
+    {label: 'Instagram', href: 'https://instagram.com/'},
+    {label: 'Telegram', href: 'https://t.me/'},
     // {label: 'Facebook', href: 'https://facebook.com/baoauto'}
   ]
 }
 
 export default function ContactsPage(){
   const canonical = absoluteUrl('/contacts')
-  const title = 'Контакти - BAO AUTO'
-  const description = 'Контакти BAO AUTO: телефони, адреса у Ченстохова, соцмережі, графік роботи та швидкий зв\'язок для підбору авто.'
+  const title = 'Контакти - GameSense AUTO'
+  const description = 'Контакти GameSense AUTO: телефони, адреса у Poland, соцмережі, графік роботи та швидкий зв\'язок для підбору авто.'
   const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONTACTS.address)}`
 
   return (
@@ -35,10 +35,10 @@ export default function ContactsPage(){
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
-        <meta property="og:image" content={absoluteUrl('/logo_baoauto.png')} />
+        <meta property="og:image" content={absoluteUrl('/logo.svg')} />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={absoluteUrl('/logo_baoauto.png')} />
+        <meta name="twitter:image" content={absoluteUrl('/logo.svg')} />
       </Head>
 
       <main className="container-wide py-6 sm:py-8 relative">
@@ -48,7 +48,7 @@ export default function ContactsPage(){
         <section className="relative z-10 premium-card rounded-3xl p-5 sm:p-8 mt-6 border border-white/10 overflow-hidden">
           <div className="absolute -left-20 -top-20 w-72 h-72 rounded-full bg-[var(--accent)]/10 blur-3xl" />
           <div className="relative max-w-3xl">
-            <div className="text-xs uppercase tracking-[0.18em] text-white/55">BAO AUTO</div>
+            <div className="text-xs uppercase tracking-[0.18em] text-white/55">GameSense AUTO</div>
             <h1 className="mt-2 text-3xl sm:text-4xl font-semibold">Контакти та співпраця</h1>
             <p className="mt-4 text-white/75 leading-relaxed">
               Ми підбираємо авто з Європи під ваш бюджет, проводимо технічну перевірку,

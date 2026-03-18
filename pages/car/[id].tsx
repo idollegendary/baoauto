@@ -276,13 +276,13 @@ export default function CarPage({ car, images }: CarPageProps) {
   ]
 
   const hasAnySpecs = specSections.some((section) => section.items.length > 0)
-  const pageTitle = `${car.title} - BAO AUTO`
+  const pageTitle = `${car.title} - GameSense AUTO`
   const pageDescription = buildSeoDescription(
     car.description,
     `${car.title}. ${car.year ? `Рік: ${car.year}. ` : ''}${car.km ? `Пробіг: ${Number(car.km).toLocaleString('en-US')} км. ` : ''}${pricePLN ? `Ціна: ${pricePLN}.` : ''}`
   )
   const canonical = absoluteUrl(`/car/${car.id}`)
-  const ogImage = galleryImages[0] || absoluteUrl('/logo_baoauto.png')
+  const ogImage = galleryImages[0] || absoluteUrl('/logo.svg')
 
   return (
     <>
