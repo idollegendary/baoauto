@@ -434,7 +434,7 @@ export default function CarPage({ car, images }: CarPageProps) {
             <div className="premium-card rounded-2xl p-4 sm:p-5">
               <div className="text-xs uppercase tracking-[0.16em] text-white/50">Контакти</div>
               <div className="mt-3 grid grid-cols-1 gap-3">
-                <a href="tel:+48662722070" className="text-center py-3 rounded-lg bg-[var(--accent)] text-black font-semibold">Зателефонувати</a>
+                <a href="tel:+48000000000" className="text-center py-3 rounded-lg bg-[var(--accent)] text-black font-semibold">Зателефонувати</a>
                 <a href="https://t.me/perekup15" target="_blank" rel="noreferrer" className="text-center py-3 rounded-lg border border-white/15 text-white/90 hover:bg-white/10">Telegram</a>
                 {/* <a href="viber://chat?number=%2B48662722070" className="text-center py-3 rounded-lg border border-white/15 text-white/90 hover:bg-white/10">Viber</a> */}
                 <a href="https://instagram.com/perekup.pl1" target="_blank" rel="noreferrer" className="text-center py-3 rounded-lg border border-white/15 text-white/90 hover:bg-white/10">Instagram</a>

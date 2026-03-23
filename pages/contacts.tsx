@@ -4,7 +4,7 @@ import Footer from '../components/Footer'
 import { absoluteUrl } from '../lib/seo'
 
 const CONTACTS = {
-  phones: ['+48 790 617 303'],
+  phones: ['+48 000 000 000', '+48 000 000 000'],
   email: 'gamesense.sales@gmail.com',
   address: 'GameSense AUTO, Poland',
   hours: [

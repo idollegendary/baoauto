@@ -1,5 +1,5 @@
 export default function BaoInfo(){
-  const phone = '+48-790-617-303'
+  const phone = '+48-000-000-000'
   const address = 'GameSense AUTO, Poland'
   const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
 
