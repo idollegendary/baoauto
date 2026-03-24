@@ -4,12 +4,13 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   // Перевіряємо, чи активний режим технічного обслуговування
   if (process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true') {
-    // Не блокуємо API маршрути та статичні файли
+    // Не блокуємо API маршрути, статичні файли, sitemap та maintenance
     if (
       !request.nextUrl.pathname.startsWith('/api/') &&
       !request.nextUrl.pathname.startsWith('/_next/') &&
       !request.nextUrl.pathname.startsWith('/public/') &&
-      request.nextUrl.pathname !== '/maintenance'
+      request.nextUrl.pathname !== '/maintenance' &&
+      request.nextUrl.pathname !== '/sitemap.xml'
     ) {
       return NextResponse.redirect(new URL('/maintenance', request.url))
     }
